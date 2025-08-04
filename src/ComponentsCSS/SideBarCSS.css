@@ -1,0 +1,112 @@
+.sidebar {
+    width: 240px;
+    background-color: #fff;
+    border-right: 1px solid #e0e0e0;
+    padding: 16px 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    margin-bottom: 16px;
+}
+
+.logo-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #d5eaff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+}
+
+.logo-text {
+    font-weight: 600;
+}
+
+.logo-dropdown {
+    margin-left: auto;
+    color: #9aa5b1;
+}
+
+.nav-items, .channels-section, .help-section {
+    margin-bottom: 24px;
+}
+
+.section-header {
+    color: #9aa5b1;
+    font-size: 12px;
+    padding: 8px 16px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    color: #333;
+    text-decoration: none;
+    background-color: transparent; /* 默认背景颜色为透明 */
+}
+
+.nav-item:hover {
+    background-color: #f0f4f8;
+}
+
+.nav-item.active {
+    background-color: #e6eaff; /* 选中时的背景颜色 */
+}
+
+.nav-icon {
+    width: 20px;
+    margin-right: 12px;
+}
+
+.nav-text {
+    flex: 1;
+}
+
+.channel-actions, .add-channel {
+    margin-left: auto;
+    color: #9aa5b1;
+}
+
+.channel-count {
+    margin-left: auto;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+}
+
+.check-icon {
+    margin-left: auto;
+    color: #26a69a;
+}
+
+.help-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #333;
+    background-color: transparent; /* 默认背景颜色为透明 */
+}
+
+.help-item.active {
+    background-color: #e6eaff; /* 选中时的背景颜色 */
+}
+
+.help-icon {
+    width: 20px;
+    margin-right: 12px;
+}

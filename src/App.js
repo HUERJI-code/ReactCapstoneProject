@@ -1,8 +1,10 @@
 import './App.css';
-import {BrowserRouter as Router, Route, Routes, useLocation} from 'react-router-dom';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import OrganizerLogin from "./Pages/OrganizerLogin";
 import OrganizerRegister from "./Pages/OrganizerRegister";
 import Dashboard from "./Pages/Dashboard";
+import OrganizerLayout from "./layout/OrganizerLayout";
+import Inbox from "./Components/Inbox";
 
 const App = () => {
   return (
@@ -33,8 +35,12 @@ const MainApp = () => {
             {/*<Route path="/" element={<HomePage/>}/>*/}
               <Route path="/" element={<OrganizerLogin/>}/>
               <Route path="/OrganizerSignUp" element={<OrganizerRegister/>}/>
-              <Route path="/Dashboard" element={<Dashboard/>}/>
-          </Routes>
+              {/*<Route path="/Dashboard" element={<Dashboard/>}/>*/}
+                <Route path="/" element={<OrganizerLayout/>}>
+                    <Route path="/Dashboard" element={<Dashboard/>}/>
+                    <Route path="/Inbox" element={<Inbox/>}/>
+                </Route>
+            </Routes>
         </main>
 
         {/* Only render Footer when not on the login, register, forgot password pages */}

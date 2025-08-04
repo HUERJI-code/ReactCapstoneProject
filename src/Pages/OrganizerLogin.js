@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import '../PagesCSS/OrganizerLoginCSS.css'; // 确保路径正确
 
@@ -10,7 +10,7 @@ export default function LoginOrganizer() {
     const [password, setPassword] = useState('');
 
     const navigate = useNavigate();
-    const location = useLocation();
+    //const location = useLocation();
 
     async function handleLoginClick(e) {
         e.preventDefault();
@@ -20,7 +20,9 @@ export default function LoginOrganizer() {
                 "identifier": email,
                 "passwordHash": password,
             };
-            const response = await axios.post(REST_API_URL, data);
+            const response = await axios.post(REST_API_URL, data,{
+                withCredentials: true
+            });
 
             if (response.status === 200) {
                 alert("Login successfully!");
