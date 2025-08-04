@@ -5,6 +5,8 @@ import OrganizerRegister from "./Pages/OrganizerRegister";
 import Dashboard from "./Pages/Dashboard";
 import OrganizerLayout from "./layout/OrganizerLayout";
 import Inbox from "./Components/Inbox";
+import CreateActivity from "./Components/CreateActivity";
+import ManageActivities from "./Components/ManageActivities";
 
 const App = () => {
   return (
@@ -39,6 +41,8 @@ const MainApp = () => {
                 <Route path="/" element={<OrganizerLayout/>}>
                     <Route path="/Dashboard" element={<Dashboard/>}/>
                     <Route path="/Inbox" element={<Inbox/>}/>
+                    <Route path="/CreateActivity" element={<CreateActivity/>}/>
+                    <Route path="/ManageActivities" element={<ManageActivities/>}/>
                 </Route>
             </Routes>
         </main>

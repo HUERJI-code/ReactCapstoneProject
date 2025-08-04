@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Link, useLocation, useNavigate} from 'react-router-dom';
 import '../ComponentsCSS/SideBarCSS.css';
 import axios from "axios";
@@ -6,6 +6,20 @@ import axios from "axios";
 const Sidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const [messages, setMessages] = useState([]);
+    const [unreadMessages, setUnreadMessages] = useState(0);
+
+    const fetchMessages = async () => {
+        try {
+            const response = await axios.get('https://localhost:7085/getLoginUserMessage');
+            setMessages(response.data);
+            const unreadCount = response.data.filter(message => message.isRead === false).length;
+            setUnreadMessages(unreadCount);
+        } catch (err) {
+            console.error(err);
+        } finally {
+        }
+    };
 
     const isActive = (path) => {
         return location.pathname === path;
@@ -28,6 +42,7 @@ const Sidebar = () => {
 
     useEffect(() => {
         checkLoginStatus();
+        fetchMessages();
     }, []);
 
     return (
@@ -38,7 +53,7 @@ const Sidebar = () => {
                 <span className="logo-dropdown">▼</span>
             </div>
             <div className="nav-items">
-                <Link to="/" className={`nav-item ${isActive('/Dashboard') ? 'active' : ''}`}>
+                <Link to="/Dashboard" className={`nav-item ${isActive('/Dashboard') ? 'active' : ''}`}>
                     <i className="nav-icon">📊</i>
                     <span className="nav-text">Dashboards</span>
                 </Link>
@@ -49,12 +64,13 @@ const Sidebar = () => {
                 <Link to="/inbox" className={`nav-item ${isActive('/inbox') ? 'active' : ''}`}>
                     <i className="nav-icon">✉️</i>
                     <span className="nav-text">Inbox</span>
+                    <span className="icon-link">{unreadMessages}</span>
                 </Link>
-                <Link to="/create-activity" className={`nav-item ${isActive('/create-activity') ? 'active' : ''}`}>
+                <Link to="/CreateActivity" className={`nav-item ${isActive('/CreateActivity') ? 'active' : ''}`}>
                     <i className="nav-icon">➕</i>
                     <span className="nav-text">Create Activity</span>
                 </Link>
-                <Link to="/manage-activities" className={`nav-item ${isActive('/manage-activities') ? 'active' : ''}`}>
+                <Link to="/ManageActivities" className={`nav-item ${isActive('/ManageActivities') ? 'active' : ''}`}>
                     <i className="nav-icon">📺</i>
                     <span className="nav-text">Manage Activities</span>
                 </Link>

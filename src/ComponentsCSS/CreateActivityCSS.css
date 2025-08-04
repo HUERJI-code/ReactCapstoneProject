@@ -1,0 +1,162 @@
+.create-activity-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.create-activity-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    width: 800px;
+    max-width: 90%;
+}
+
+h2 {
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.tag-section {
+    margin-bottom: 24px;
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.selected-tag {
+    background-color: #f0f2f5;
+    padding: 6px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.remove-tag {
+    background: none;
+    border: none;
+    color: #666;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.add-tag-btn {
+    background-color: #f0f2f5;
+    border: 1px dashed #bbb;
+    color: #666;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.tag-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tag-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    padding: 24px;
+}
+
+.tag-modal h3 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tag-item {
+    padding: 8px 16px;
+    background-color: #f0f2f5;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.tag-item:hover {
+    background-color: #e6eaff;
+}
+
+.tag-item.selected {
+    background-color: #d4e6ff;
+    color: #1890ff;
+}
+
+.modal-footer {
+    text-align: right;
+}
+
+.back-btn {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.create-btn {
+    background-color: #4e6ef2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.create-btn:hover {
+    background-color: #3d5af1;
+}
