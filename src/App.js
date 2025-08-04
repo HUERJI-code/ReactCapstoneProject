@@ -1,5 +1,6 @@
 import './App.css';
 import {BrowserRouter as Router, Route, Routes, useLocation} from 'react-router-dom';
+import OrganizerLogin from "./Pages/OrganizerLogin";
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const MainApp = () => {
         <main className="flex-grow-1">
           <Routes>
             {/*<Route path="/" element={<HomePage/>}/>*/}
+              <Route path="/" element={<OrganizerLogin/>}/>
           </Routes>
         </main>
 

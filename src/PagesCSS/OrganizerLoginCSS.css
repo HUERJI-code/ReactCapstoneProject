@@ -1,0 +1,95 @@
+/* 登录页面背景和布局 */
+.login-wrapper {
+    background: linear-gradient(to right, #7443d5, #d56a7a);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 登录卡片 */
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    text-align: left; /* 左对齐 */
+}
+
+/* 标题 */
+.login-card h4 {
+    margin-bottom: 2rem;
+    text-align: center; /* 居中对齐标题 */
+}
+
+/* 输入框和按钮样式 */
+.form-control {
+    margin-bottom: 1rem; /* 减少输入框之间的间距 */
+    padding: 0.8rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.btn {
+    border-radius: 5px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    margin-bottom: 0.5rem; /* 减少按钮之间的间距 */
+}
+
+.btn-primary {
+    background-color: #7443d5;
+    border-color: #7443d5;
+}
+
+.btn-outline-dark {
+    color: #333;
+    border-color: #ccc;
+}
+
+/* 分隔线 */
+.divider {
+    margin: 0.5rem 0; /* 减少分隔线与按钮之间的间距 */
+    color: #6c757d;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #dee2e6;
+    margin: 0 0.5rem;
+}
+
+/* 条款和隐私政策链接 */
+.tos {
+    font-size: 0.875rem; /* 减小字体大小 */
+    color: #6c757d; /* 设置为灰色 */
+    margin-top: 1rem; /* 增加与按钮之间的间距 */
+    text-align: center; /* 居中对齐 */
+}
+
+.tos a {
+    color: #6c757d; /* 设置链接为灰色 */
+    text-decoration: none;
+}
+
+.tos a:hover {
+    text-decoration: underline;
+}
+
+/* 帮助链接样式 */
+.help-link {
+    color: #6c757d;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.help-link:hover {
+    text-decoration: underline;
+}
