@@ -24,7 +24,7 @@ export default function LoginOrganizer() {
 
             if (response.status === 200) {
                 alert("Login successfully!");
-                navigate(0);
+                navigate("/Dashboard");
             }
         } catch (error) {
             alert("Login failed. Please check your credentials!");
@@ -63,7 +63,7 @@ export default function LoginOrganizer() {
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary w-100 mb-2" onClick={handleLoginClick}>
+                    <button type="submit" className="btn btn-primary w-100 mb-3" onClick={handleLoginClick}>
                         Login
                     </button>
                 </form>
@@ -72,13 +72,18 @@ export default function LoginOrganizer() {
 
                 <button className="btn btn-outline-dark w-100 mb-2">
                     <img
-                        src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" // 尝试使用在线图标
+                        src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg"
                         alt="Google"
                         width="20"
                         height="20"
                         className="me-2"
                     />
                     Continue with Google
+                </button>
+
+                <button className="btn btn-outline-primary w-100 mb-2"
+                        onClick={() => navigate('/OrganizerSignUp')}>
+                    Sign Up
                 </button>
 
                 <p className="tos">

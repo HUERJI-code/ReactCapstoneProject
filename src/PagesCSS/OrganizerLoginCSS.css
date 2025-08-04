@@ -49,6 +49,11 @@
     border-color: #ccc;
 }
 
+.btn-outline-primary {
+    color: #007bff;
+    border-color: #007bff;
+}
+
 /* 分隔线 */
 .divider {
     margin: 0.5rem 0; /* 减少分隔线与按钮之间的间距 */

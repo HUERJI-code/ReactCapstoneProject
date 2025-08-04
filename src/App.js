@@ -1,6 +1,8 @@
 import './App.css';
 import {BrowserRouter as Router, Route, Routes, useLocation} from 'react-router-dom';
 import OrganizerLogin from "./Pages/OrganizerLogin";
+import OrganizerRegister from "./Pages/OrganizerRegister";
+import Dashboard from "./Pages/Dashboard";
 
 const App = () => {
   return (
@@ -30,6 +32,8 @@ const MainApp = () => {
           <Routes>
             {/*<Route path="/" element={<HomePage/>}/>*/}
               <Route path="/" element={<OrganizerLogin/>}/>
+              <Route path="/OrganizerSignUp" element={<OrganizerRegister/>}/>
+              <Route path="/Dashboard" element={<Dashboard/>}/>
           </Routes>
         </main>
 
