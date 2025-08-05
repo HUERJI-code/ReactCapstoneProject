@@ -7,6 +7,11 @@ import OrganizerLayout from "./layout/OrganizerLayout";
 import Inbox from "./Components/Inbox";
 import CreateActivity from "./Components/CreateActivity";
 import ManageActivities from "./Components/ManageActivities";
+import ReviewRequests from "./Components/ReviewRequests";
+import CreateChannel from "./Components/CreateChannel";
+import ManageChannel from "./Components/ManageChannel";
+import PublishPost from "./Components/PublishPost";
+import Help from "./Components/Help";
 
 const App = () => {
   return (
@@ -43,6 +48,11 @@ const MainApp = () => {
                     <Route path="/Inbox" element={<Inbox/>}/>
                     <Route path="/CreateActivity" element={<CreateActivity/>}/>
                     <Route path="/ManageActivities" element={<ManageActivities/>}/>
+                    <Route path="/ReviewRequests" element={<ReviewRequests/>}/>
+                    <Route path="/CreateChannel" element={<CreateChannel/>}/>
+                    <Route path="/ManageChannel" element={<ManageChannel/>}/>
+                    <Route path="/PublishPost" element={<PublishPost/>}/>
+                    <Route path="/Help" element={<Help/>}/>
                 </Route>
             </Routes>
         </main>

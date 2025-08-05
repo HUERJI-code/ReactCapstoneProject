@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Link, useLocation, useNavigate} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../ComponentsCSS/SideBarCSS.css';
 import axios from "axios";
 
@@ -17,7 +17,6 @@ const Sidebar = () => {
             setUnreadMessages(unreadCount);
         } catch (err) {
             console.error(err);
-        } finally {
         }
     };
 
@@ -27,16 +26,16 @@ const Sidebar = () => {
 
     const checkLoginStatus = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Login/check',{
+            const response = await axios.get('https://localhost:7085/api/Login/check', {
                 withCredentials: true
             });
             if (response.status === 401) {
-                navigate("/OrganizerLogin")
+                navigate("/OrganizerLogin");
             }
         } catch (err) {
             console.error(err);
             alert("Not logged in");
-            navigate("/")
+            navigate("/");
         }
     };
 
@@ -44,6 +43,14 @@ const Sidebar = () => {
         checkLoginStatus();
         fetchMessages();
     }, []);
+
+    const isMyChannelsActive = () => {
+        return (
+            location.pathname === '/CreateChannel' ||
+            location.pathname === '/ManageChannel' ||
+            location.pathname === '/PublishPost'
+        );
+    };
 
     return (
         <div className="sidebar">
@@ -57,14 +64,14 @@ const Sidebar = () => {
                     <i className="nav-icon">📊</i>
                     <span className="nav-text">Dashboards</span>
                 </Link>
-                <Link to="/home" className={`nav-item ${isActive('/home') ? 'active' : ''}`}>
-                    <i className="nav-icon">🏠</i>
-                    <span className="nav-text">Home</span>
-                </Link>
+                {/*<Link to="/home" className={`nav-item ${isActive('/home') ? 'active' : ''}`}>*/}
+                {/*    <i className="nav-icon">🏠</i>*/}
+                {/*    <span className="nav-text">Home</span>*/}
+                {/*</Link>*/}
                 <Link to="/inbox" className={`nav-item ${isActive('/inbox') ? 'active' : ''}`}>
                     <i className="nav-icon">✉️</i>
                     <span className="nav-text">Inbox</span>
-                    <span className="icon-link">{unreadMessages}</span>
+                    <span className="icon-link">New: {unreadMessages}</span>
                 </Link>
                 <Link to="/CreateActivity" className={`nav-item ${isActive('/CreateActivity') ? 'active' : ''}`}>
                     <i className="nav-icon">➕</i>
@@ -74,26 +81,34 @@ const Sidebar = () => {
                     <i className="nav-icon">📺</i>
                     <span className="nav-text">Manage Activities</span>
                 </Link>
-                <Link to="/more" className={`nav-item ${isActive('/more') ? 'active' : ''}`}>
-                    <i className="nav-icon">ℹ️</i>
-                    <span className="nav-text">More</span>
+                <Link to="/ReviewRequests" className={`nav-item ${isActive('/ReviewRequests') ? 'active' : ''}`}>
+                    <i className="nav-icon">📝</i>
+                    <span className="nav-text">Review Requests</span>
                 </Link>
+                {/*<Link to="/more" className={`nav-item ${isActive('/more') ? 'active' : ''}`}>*/}
+                {/*    <i className="nav-icon">ℹ️</i>*/}
+                {/*    <span className="nav-text">More</span>*/}
+                {/*</Link>*/}
             </div>
             <div className="channels-section">
                 <div className="section-header">
                     <span>Channels ›</span>
                 </div>
-                <Link to="/channels/my-channels" className={`nav-item ${isActive('/channels/my-channels') ? 'active' : ''}`}>
+                <div className={`nav-item ${isMyChannelsActive() ? 'active' : ''}`}>
                     <i className="nav-icon">💬</i>
                     <span className="nav-text">My Channels</span>
                     <span className="channel-actions">⋯</span>
                     <span className="add-channel">+</span>
+                </div>
+                <Link to="/CreateChannel" className={`nav-item ${isActive('/CreateChannel') ? 'active' : ''}`}>
+                    <i className="nav-icon">🔍</i>
+                    <span className="nav-text">Create Channel</span>
                 </Link>
-                <Link to="/channels/manage-channel" className={`nav-item ${isActive('/channels/manage-channel') ? 'active' : ''}`}>
+                <Link to="/ManageChannel" className={`nav-item ${isActive('/channels/ManageChannel') ? 'active' : ''}`}>
                     <i className="nav-icon">⚙️</i>
                     <span className="nav-text">Manage Channel</span>
                 </Link>
-                <Link to="/channels/publish-post" className={`nav-item ${isActive('/channels/publish-post') ? 'active' : ''}`}>
+                <Link to="/PublishPost" className={`nav-item ${isActive('/channels/PublishPost') ? 'active' : ''}`}>
                     <i className="nav-icon">📤</i>
                     <span className="nav-text">Publish Post</span>
                     <span className="check-icon">✓</span>

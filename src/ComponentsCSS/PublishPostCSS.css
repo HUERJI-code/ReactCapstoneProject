@@ -1,0 +1,172 @@
+/* PublishPostCSS.css */
+.manage-channels-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.channels-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.view-options {
+    display: flex;
+    gap: 10px;
+}
+
+.view-options button {
+    padding: 8px 16px;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.view-options button.active {
+    background-color: #f0f2f5;
+}
+
+.search-customize {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.hide-btn, .customize-btn {
+    padding: 8px 16px;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.channels-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background-color: #f9fafc;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.table-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-cell {
+    flex: 1;
+}
+
+.edit-btn, .cancel-btn {
+    padding: 6px 12px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.edit-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.edit-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 800px;
+    max-width: 90%;
+    padding: 24px;
+}
+
+.edit-modal h3 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 调整这个值来改变单选框和文字之间的间距 */
+    margin-bottom: 0;
+    white-space: nowrap; /* 防止文字换行 */
+}
+
+.form-group input[type="checkbox"] {
+    margin: 0;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.update-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
