@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../ComponentsCSS/ReviewRequestsCSS.css';
+import {useNavigate} from "react-router-dom";
 
 const ReviewRequests = () => {
     const [reviewRequests, setReviewRequests] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchReviewRequests();
@@ -28,6 +30,7 @@ const ReviewRequests = () => {
                 });
             alert(`Request ${requestId} has been ${status}.`);
             fetchReviewRequests();
+            navigate(0);
         } catch (error) {
             console.error("Failed to review request:", error);
             alert('Failed to review request. Please try again.');

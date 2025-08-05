@@ -1,0 +1,103 @@
+/* ViewChannelPostCSS.css */
+.view-channel-post-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.channels-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background-color: #f9fafc;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.table-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-cell {
+    flex: 1;
+}
+
+.view-history-btn {
+    padding: 6px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.view-history-btn:hover {
+    background-color: #45a049;
+}
+
+.history-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.history-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 800px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.messages-list {
+    margin-top: 20px;
+}
+
+.message-item {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.message-item p {
+    margin-bottom: 8px;
+}

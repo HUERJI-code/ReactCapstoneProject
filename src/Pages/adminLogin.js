@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
-import '../PagesCSS/OrganizerLoginCSS.css'; // 确保路径正确
+import '../PagesCSS/AdminLoginCSS.css'; // 确保路径正确
 
 const REST_API_URL = "https://localhost:7085/api/Login/login";
 
-export default function LoginOrganizer() {
+export default function AdminLogin() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [userType, setUserType] = useState(true)
 
     const navigate = useNavigate();
-    //const location = useLocation();
 
     async function handleLoginClick(e) {
         e.preventDefault();
@@ -21,12 +19,12 @@ export default function LoginOrganizer() {
                 "identifier": email,
                 "passwordHash": password,
             };
-            const response = await axios.post(REST_API_URL, data,{
+            const response = await axios.post(REST_API_URL, data, {
                 withCredentials: true
             });
 
             if (response.status === 200) {
-                await checkLoginUserType()
+                await checkLoginUserType();
             }
         } catch (error) {
             alert("Login failed. Please check your credentials!");
@@ -38,23 +36,22 @@ export default function LoginOrganizer() {
         try {
             const response = await axios.get("https://localhost:7085/checkLoginUserType");
             if (response.status === 200) {
-                if (response.data.userType === "organizer") {
-                    alert("Login successfully!");
-                    navigate("/Dashboard");
-                }else{
-                    alert("Login UserType must be organizer!")
+                if (response.data.userType === "admin") {
+                    alert("Admin Login successfully!");
+                    navigate("/AdminDashboard");
+                } else {
+                    alert("Login failed. Your account is not authorized as an admin.");
                 }
             }
         } catch (error) {
             console.error("Failed to fetch user type:", error);
-            setUserType(false); // 默认设置为非管理员用户类型
         }
     }
 
     return (
         <div className="login-wrapper">
             <div className="login-card">
-                <h4 className="mb-3">Login as organizers</h4>
+                <h4 className="mb-3">Admin Login</h4>
 
                 <form>
                     <div className="mb-3">
@@ -98,11 +95,6 @@ export default function LoginOrganizer() {
                         className="me-2"
                     />
                     Continue with Google
-                </button>
-
-                <button className="btn btn-outline-primary w-100 mb-2"
-                        onClick={() => navigate('/OrganizerSignUp')}>
-                    Sign Up
                 </button>
 
                 <p className="tos">

@@ -48,7 +48,8 @@ const Sidebar = () => {
         return (
             location.pathname === '/CreateChannel' ||
             location.pathname === '/ManageChannel' ||
-            location.pathname === '/PublishPost'
+            location.pathname === '/PublishPost' ||
+            location.pathname === '/ViewChannelPost' // 添加新页面的路径检查
         );
     };
 
@@ -64,10 +65,6 @@ const Sidebar = () => {
                     <i className="nav-icon">📊</i>
                     <span className="nav-text">Dashboards</span>
                 </Link>
-                {/*<Link to="/home" className={`nav-item ${isActive('/home') ? 'active' : ''}`}>*/}
-                {/*    <i className="nav-icon">🏠</i>*/}
-                {/*    <span className="nav-text">Home</span>*/}
-                {/*</Link>*/}
                 <Link to="/inbox" className={`nav-item ${isActive('/inbox') ? 'active' : ''}`}>
                     <i className="nav-icon">✉️</i>
                     <span className="nav-text">Inbox</span>
@@ -85,10 +82,6 @@ const Sidebar = () => {
                     <i className="nav-icon">📝</i>
                     <span className="nav-text">Review Requests</span>
                 </Link>
-                {/*<Link to="/more" className={`nav-item ${isActive('/more') ? 'active' : ''}`}>*/}
-                {/*    <i className="nav-icon">ℹ️</i>*/}
-                {/*    <span className="nav-text">More</span>*/}
-                {/*</Link>*/}
             </div>
             <div className="channels-section">
                 <div className="section-header">
@@ -104,14 +97,18 @@ const Sidebar = () => {
                     <i className="nav-icon">🔍</i>
                     <span className="nav-text">Create Channel</span>
                 </Link>
-                <Link to="/ManageChannel" className={`nav-item ${isActive('/channels/ManageChannel') ? 'active' : ''}`}>
+                <Link to="/ManageChannel" className={`nav-item ${isActive('/ManageChannel') ? 'active' : ''}`}>
                     <i className="nav-icon">⚙️</i>
                     <span className="nav-text">Manage Channel</span>
                 </Link>
-                <Link to="/PublishPost" className={`nav-item ${isActive('/channels/PublishPost') ? 'active' : ''}`}>
+                <Link to="/PublishPost" className={`nav-item ${isActive('/PublishPost') ? 'active' : ''}`}>
                     <i className="nav-icon">📤</i>
                     <span className="nav-text">Publish Post</span>
                     <span className="check-icon">✓</span>
+                </Link>
+                <Link to="/ViewChannelPost" className={`nav-item ${isActive('/ViewChannelPost') ? 'active' : ''}`}>
+                    <i className="nav-icon">📜</i>
+                    <span className="nav-text">View Channel Post</span>
                 </Link>
             </div>
             <div className="help-section">

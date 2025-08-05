@@ -12,6 +12,11 @@ import CreateChannel from "./Components/CreateChannel";
 import ManageChannel from "./Components/ManageChannel";
 import PublishPost from "./Components/PublishPost";
 import Help from "./Components/Help";
+import AdminLogin from "./Pages/adminLogin";
+import AdminLayout from "./layout/AdminLayout";
+import AdminDashboard from "./Components/AdminDashBoard";
+import AdminInbox from "./Components/AdminInbox";
+import ViewChannelPost from "./Components/ViewChannelPost";
 
 const App = () => {
   return (
@@ -53,7 +58,13 @@ const MainApp = () => {
                     <Route path="/ManageChannel" element={<ManageChannel/>}/>
                     <Route path="/PublishPost" element={<PublishPost/>}/>
                     <Route path="/Help" element={<Help/>}/>
+                    <Route path="/ViewChannelPost" element={<ViewChannelPost/>}/>
                 </Route>
+              <Route path="/AdminLogin" element={<AdminLogin/>}/>
+              <Route path="/" element={<AdminLayout/>}>
+                    <Route path="/AdminDashboard" element={<AdminDashboard />}/>
+                    <Route path="/AdminInbox" element={<AdminInbox/>}/>
+              </Route>
             </Routes>
         </main>
 
