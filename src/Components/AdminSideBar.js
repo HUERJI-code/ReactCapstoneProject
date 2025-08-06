@@ -65,25 +65,25 @@ export default function AdminSideBar() {
                 </Link>
             </div>
             <div className="channels-section">
-                <Link to="/ManageActivities" className={`nav-item ${isActive('/ManageActivities') ? 'active' : ''}`}>
+                <Link to="/AdminManageActivities" className={`nav-item ${isActive('/AdminManageActivities') ? 'active' : ''}`}>
                     <i className="nav-icon">🎬</i>
                     <span className="nav-text">Manage Activities</span>
                 </Link>
-                <Link to="/ManageChannel" className={`nav-item ${isActive('/ManageChannel') ? 'active' : ''}`}>
+                <Link to="/AdminManageChannels" className={`nav-item ${isActive('/AdminManageChannels') ? 'active' : ''}`}>
                     <i className="nav-icon">📺</i>
                     <span className="nav-text">Manage Channel</span>
                 </Link>
-                <Link to="/TagManagement" className={`nav-item ${isActive('/TagManagement') ? 'active' : ''}`}>
+                <Link to="/ManageTags" className={`nav-item ${isActive('/ManageTags') ? 'active' : ''}`}>
                     <i className="nav-icon">🏷️</i>
                     <span className="nav-text">Tag Management</span>
                 </Link>
             </div>
-            <div className="help-section">
-                <Link to="/help" className={`help-item ${isActive('/help') ? 'active' : ''}`}>
-                    <i className="help-icon">❓</i>
-                    <span className="help-text">Help</span>
-                </Link>
-            </div>
+            {/*<div className="help-section">*/}
+            {/*    <Link to="/help" className={`help-item ${isActive('/help') ? 'active' : ''}`}>*/}
+            {/*        <i className="help-icon">❓</i>*/}
+            {/*        <span className="help-text">Help</span>*/}
+            {/*    </Link>*/}
+            {/*</div>*/}
         </div>
     );
 }

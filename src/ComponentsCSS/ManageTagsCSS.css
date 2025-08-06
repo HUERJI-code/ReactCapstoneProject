@@ -1,0 +1,92 @@
+/* ManageTagsCSS.css */
+.manage-tags-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.create-tag-btn {
+    margin-left: 10px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tags-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tags-table th,
+.tags-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.create-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.create-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.create-modal h3 {
+    margin-bottom: 20px;
+}
+
+.create-modal input,
+.create-modal textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.create-modal button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.create-modal .create-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.create-modal .cancel-btn {
+    background-color: #f0f2f5;
+    color: #333;
+}

@@ -17,6 +17,10 @@ import AdminLayout from "./layout/AdminLayout";
 import AdminDashboard from "./Components/AdminDashBoard";
 import AdminInbox from "./Components/AdminInbox";
 import ViewChannelPost from "./Components/ViewChannelPost";
+import ManageUserAccount from "./Components/ManageUserAccount";
+import AdminManageActivities from "./Components/AdminManageActivities";
+import AdminManageChannels from "./Components/AdminManageChannels";
+import ManageTags from "./Components/ManageTags";
 
 const App = () => {
   return (
@@ -64,6 +68,10 @@ const MainApp = () => {
               <Route path="/" element={<AdminLayout/>}>
                     <Route path="/AdminDashboard" element={<AdminDashboard />}/>
                     <Route path="/AdminInbox" element={<AdminInbox/>}/>
+                    <Route path="/ManageUserAccount" element={<ManageUserAccount/>}/>
+                    <Route path="/AdminManageActivities" element={<AdminManageActivities/>}/>
+                    <Route path="/AdminManageChannels" element={<AdminManageChannels />}/>
+                    <Route path="/ManageTags" element={<ManageTags />}/>
               </Route>
             </Routes>
         </main>
