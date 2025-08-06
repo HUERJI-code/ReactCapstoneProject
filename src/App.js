@@ -21,6 +21,8 @@ import ManageUserAccount from "./Components/ManageUserAccount";
 import AdminManageActivities from "./Components/AdminManageActivities";
 import AdminManageChannels from "./Components/AdminManageChannels";
 import ManageTags from "./Components/ManageTags";
+import ManageActivityRequests from "./Components/ManageActivityRequests";
+import ReviewReportedChannel from "./Components/ReviewReportedChannel";
 
 const App = () => {
   return (
@@ -72,6 +74,8 @@ const MainApp = () => {
                     <Route path="/AdminManageActivities" element={<AdminManageActivities/>}/>
                     <Route path="/AdminManageChannels" element={<AdminManageChannels />}/>
                     <Route path="/ManageTags" element={<ManageTags />}/>
+                    <Route path="/AdminManageActivityRequests" element={<ManageActivityRequests />}/>
+                    <Route path="/ReviewReportedChannel" element={<ReviewReportedChannel/>}/>
               </Route>
             </Routes>
         </main>

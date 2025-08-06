@@ -1,0 +1,68 @@
+/* ReviewChannelMessagesCSS.css */
+.review-channel-messages-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.reports-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background-color: #f9fafc;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.table-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table-cell {
+    flex: 1;
+}
+
+.actions-cell {
+    display: flex;
+    justify-content: flex-start; /* 左对齐 */
+    align-items: center;
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #f43360;
+    color: white;
+}

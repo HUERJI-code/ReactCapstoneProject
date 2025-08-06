@@ -29,12 +29,12 @@ export default function AdminSideBar() {
                 withCredentials: true
             });
             if (response.status === 401) {
-                navigate("/OrganizerLogin");
+                navigate("/adminLogin");
             }
         } catch (err) {
             console.error(err);
             alert("Not logged in");
-            navigate("/");
+            navigate("/adminLogin");
         }
     };
 
@@ -76,6 +76,10 @@ export default function AdminSideBar() {
                 <Link to="/ManageTags" className={`nav-item ${isActive('/ManageTags') ? 'active' : ''}`}>
                     <i className="nav-icon">🏷️</i>
                     <span className="nav-text">Tag Management</span>
+                </Link>
+                <Link to="/AdminManageActivityRequests" className={`nav-item ${isActive('/AdminManageActivityRequests') ? 'active' : ''}`}>
+                    <i className="nav-icon">📥</i>
+                    <span className="nav-text">Manage Activity Requests</span>
                 </Link>
             </div>
             {/*<div className="help-section">*/}
