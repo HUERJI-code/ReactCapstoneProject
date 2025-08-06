@@ -108,9 +108,9 @@ const ManageActivities = () => {
                 </div>
                 <div className="search-customize">
                     <input type="text" placeholder="Search..." className="search-input" />
-                    <button className="hide-btn">⨉ Hide</button>
+                    <button className="hide-btn">⨉Hide</button>
                     <div className="customize-dropdown">
-                        <button className="customize-btn">_customize</button>
+                        <button className="customize-btn">Customize</button>
                     </div>
                 </div>
             </div>

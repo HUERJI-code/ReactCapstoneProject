@@ -99,7 +99,7 @@ const ManageChannel = () => {
                     <input type="text" placeholder="Search..." className="search-input" />
                     <button className="hide-btn">⨉Hide</button>
                     <div className="customize-dropdown">
-                        <button className="customize-btn">customize</button>
+                        <button className="customize-btn">Customize</button>
                     </div>
                 </div>
             </div>
@@ -109,6 +109,7 @@ const ManageChannel = () => {
                     <div className="table-cell">Channel Name</div>
                     <div className="table-cell">URL</div>
                     <div className="table-cell">Description</div>
+                    <div className="table-cell">Status</div>
                     <div className="table-cell">Actions</div>
                 </div>
                 <div className="table-body">
@@ -117,6 +118,7 @@ const ManageChannel = () => {
                             <div className="table-cell">{channel.name}</div>
                             <div className="table-cell">{channel.url}</div>
                             <div className="table-cell">{channel.description}</div>
+                            <div className="table-cell">{channel.status}</div>
                             <div className="table-cell">
                                 <button
                                     className="edit-btn"

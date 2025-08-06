@@ -1,0 +1,215 @@
+.manage-channel-requests-container {
+    padding: 20px;
+    max-width: 1600px;
+    margin-left: 250px;
+}
+
+.manage-channel-requests-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* 顶部提示条 */
+.banner {
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+.banner.info {
+    background-color: #eef3ff;
+}
+.banner.error {
+    background-color: #ffecec;
+    color: #b71c1c;
+}
+.banner.empty {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+.requests-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* 让长文本更好换行 */
+}
+
+.requests-table thead th {
+    text-align: left;
+    padding: 6px 4px; /* 上下6px，左右4px */
+    background-color: #f9fafc;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+}
+
+.requests-table tbody td {
+    padding: 6px 4px; /* 上下6px，左右4px */
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.requests-table {
+    border-spacing: 0; /* 去掉表格单元格之间的默认间距 */
+}
+
+
+
+/* 原子按钮 */
+.approve-btn,
+.reject-btn {
+    padding: 6px 12px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.approve-btn,
+.reject-btn {
+    display: inline-block;
+    min-width: 100px; /* 统一最小宽度，可根据需要调整 */
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap; /* 防止文字换行 */
+    font-size: 14px;
+}
+
+.approve-btn {
+    background-color: #4caf50;
+    color: white;
+}
+.approve-btn:hover {
+    background-color: #43a047;
+}
+
+.reject-btn {
+    background-color: #e53935;
+    color: #fff;
+}
+.reject-btn:hover {
+    background-color: #c62828;
+}
+
+
+.actions-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 180px;
+}
+
+/* 原因列可换行并限制高度（可选） */
+.reason-cell {
+    max-height: 3.2em; /* 约两行 */
+    overflow: hidden;
+}
+
+/* 行可点击的轻微提示（可选） */
+.clickable-row {
+    cursor: pointer;
+}
+.clickable-row:hover {
+    background-color: #fafafa;
+}
+
+/* 详情弹窗样式 */
+.report-details-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 80;
+}
+
+.report-details-modal {
+    background-color: #fff;
+    border-radius: 10px;
+    width: 720px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 16px 18px;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.25);
+}
+
+.report-details-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.report-details-modal .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+}
+.report-details-modal .close-btn:hover {
+    color: #000;
+}
+
+.report-details-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* 键值行 */
+.report-details-modal .kv {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.5;
+}
+.report-details-modal .kv .k {
+    min-width: 120px;
+    color: #666;
+    font-weight: 600;
+}
+.report-details-modal .kv .v {
+    flex: 1;
+    color: #333;
+}
+.report-details-modal .kv.col {
+    flex-direction: column;
+}
+.report-details-modal .reason-box {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #f9fafc;
+    border: 1px solid #e6e8eb;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #333;
+    line-height: 1.6;
+    max-height: 240px;
+    overflow: auto;
+}
+
+.report-details-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+/* 保持按钮等宽并单行显示（你之前的样式可复用） */
+.report-details-modal .approve-btn,
+.report-details-modal .reject-btn {
+    min-width: 100px;
+    white-space: nowrap;
+    text-align: center;
+}
+

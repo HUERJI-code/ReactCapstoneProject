@@ -23,6 +23,8 @@ import AdminManageChannels from "./Components/AdminManageChannels";
 import ManageTags from "./Components/ManageTags";
 import ManageActivityRequests from "./Components/ManageActivityRequests";
 import ReviewReportedChannel from "./Components/ReviewReportedChannel";
+import ManageChannelRequests from "./Components/ManageChannelRequests";
+import ManageChannelCreateRequest from "./Components/ManageChannelCreateRequest";
 
 const App = () => {
   return (
@@ -76,6 +78,8 @@ const MainApp = () => {
                     <Route path="/ManageTags" element={<ManageTags />}/>
                     <Route path="/AdminManageActivityRequests" element={<ManageActivityRequests />}/>
                     <Route path="/ReviewReportedChannel" element={<ReviewReportedChannel/>}/>
+                    <Route path="/ManageChannelRequests" element={<ManageChannelRequests />}/>
+                    <Route path="/ManageChannelCreateRequest" element={<ManageChannelCreateRequest/>}/>
               </Route>
             </Routes>
         </main>

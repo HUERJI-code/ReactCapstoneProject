@@ -23,7 +23,7 @@ const ManageActivityRequests = () => {
 
     const handleReview = async (requestId, status) => {
         try {
-            await axios.put(`https://localhost:5/api/Activity/approve/${requestId}?status=${status}`);
+            await axios.put(`https://localhost:7085/api/Activity/approve/${requestId}?status=${status}`);
             alert(`Request ${requestId} has been ${status}.`);
             fetchActivityRequests();
             navigate('/AdminManageActivityRequests'); // 假设 AdminManageActivityRequests 是导航目标

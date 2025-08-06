@@ -1,0 +1,97 @@
+.manage-channel-create-requests-container {
+    padding: 20px;
+    max-width: 1600px;
+    margin-left: 250px; /* 如果有侧边栏，保持和其它页面一致 */
+}
+
+.manage-channel-create-requests-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* 顶部提示条 */
+.banner {
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+.banner.info {
+    background-color: #eef3ff;
+}
+.banner.error {
+    background-color: #ffecec;
+    color: #b71c1c;
+}
+.banner.empty {
+    background-color: #f5f5f5;
+    color: #666;
+}
+
+.requests-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border-spacing: 0;
+}
+
+.requests-table thead th {
+    text-align: left;
+    padding: 6px 4px; /* 紧凑的左右间距 */
+    background-color: #f9fafc;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+}
+
+.requests-table tbody td {
+    padding: 6px 4px; /* 紧凑的左右间距 */
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+/* 长文本限制显示高度（鼠标悬浮可看完整title） */
+.limit-text {
+    max-height: 3.2em; /* 约两行 */
+    overflow: hidden;
+}
+
+/* Actions 列 */
+.actions-cell {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 180px;
+    gap: 8px;
+}
+
+/* 按钮等宽并单行 */
+.approve-btn,
+.reject-btn {
+    display: inline-block;
+    min-width: 80px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.approve-btn {
+    background-color: #4caf50;
+    color: white;
+}
+.approve-btn:hover {
+    background-color: #43a047;
+}
+
+.reject-btn {
+    background-color: #e53935;
+    color: #fff;
+}
+.reject-btn:hover {
+    background-color: #c62828;
+}

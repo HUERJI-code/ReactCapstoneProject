@@ -98,7 +98,7 @@ const PublishPost = () => {
                     <input type="text" placeholder="Search..." className="search-input" />
                     <button className="hide-btn">⨉Hide</button>
                     <div className="customize-dropdown">
-                        <button className="customize-btn">customize</button>
+                        <button className="customize-btn">Customize</button>
                     </div>
                 </div>
             </div>
