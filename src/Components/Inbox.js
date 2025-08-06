@@ -15,7 +15,12 @@ const Inbox = () => {
         try {
             setLoading(true);
             const response = await axios.get('https://localhost:7085/getLoginUserMessage');
-            setMessages(response.data);
+            setMessages(response.data.sort((a, b) => {
+                if (a.isRead !== b.isRead) {
+                    return a.isRead - b.isRead; // 0 排在前面
+                }
+                return b.id - a.id; // 同为 0 时按 id 降序排列
+            }));
             setError(null);
         } catch (err) {
             setError('Failed to fetch messages');
