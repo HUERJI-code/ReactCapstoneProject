@@ -51,16 +51,21 @@ const ManageActivities = () => {
         setSelectedTags(
             tagIds.map(id => allTags.find(tag => tag.tagId === id)).filter(Boolean)
         );
-        setEditingActivity(activity);
+        // clone to avoid direct state mutation
+        setEditingActivity({ ...activity });
         setShowEditModal(true);
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         if (name === 'startTime' || name === 'endTime') {
+            // from "YYYY-MM-DDTHH:mm" to "YYYY/MM/DD HH:mm"
+            const formatted = value
+                ? value.replace('T', ' ').replace(/-/g, '/')
+                : '';
             setEditingActivity({
                 ...editingActivity,
-                [name]: value ? value + ':00.000Z' : ''
+                [name]: formatted
             });
         } else {
             setEditingActivity({
@@ -105,7 +110,7 @@ const ManageActivities = () => {
         setSelectedTags([]);
     };
 
-    // Compute paginated slice of allTags for the tag modal
+    // Paginated tags for modal
     const startIdx = (currentPage - 1) * tagsPerPage;
     const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
 
@@ -140,7 +145,7 @@ const ManageActivities = () => {
                         <div className="table-row" key={activity.activityId}>
                             <div className="table-cell">{activity.title}</div>
                             <div className="table-cell">{activity.location}</div>
-                            <div className="table-cell">{activity.startTime}</div>
+                            <div className="table-cell">{activity.startTime.split(' ')[0]}</div>
                             <div className="table-cell">{activity.status}</div>
                             <div className="table-cell">
                                 <button
@@ -202,7 +207,15 @@ const ManageActivities = () => {
                                 <input
                                     type="datetime-local"
                                     name="startTime"
-                                    value={new Date(editingActivity.startTime).toISOString().slice(0, 16)}
+                                    value={
+                                        (() => {
+                                            const val = editingActivity.startTime || '';
+                                            const [date, time] = val.split(' ');
+                                            return date && time
+                                                ? `${date.replace(/\//g, '-')}T${time}`
+                                                : '';
+                                        })()
+                                    }
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -214,7 +227,15 @@ const ManageActivities = () => {
                                 <input
                                     type="datetime-local"
                                     name="endTime"
-                                    value={new Date(editingActivity.endTime).toISOString().slice(0, 16)}
+                                    value={
+                                        (() => {
+                                            const val = editingActivity.endTime || '';
+                                            const [date, time] = val.split(' ');
+                                            return date && time
+                                                ? `${date.replace(/\//g, '-')}T${time}`
+                                                : '';
+                                        })()
+                                    }
                                     onChange={handleInputChange}
                                     required
                                 />
