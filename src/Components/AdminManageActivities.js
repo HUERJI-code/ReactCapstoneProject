@@ -102,10 +102,10 @@ const AdminManageActivities = () => {
                     <div className="details-modal">
                         <h3>{selectedActivity.title}</h3>
                         <p><strong>Location:</strong> {selectedActivity.location}</p>
-                        <p><strong>Date:</strong> {selectedActivity.startTime.split('T')[0].split(' ')[0]}</p>
+                        <p><strong>Date:</strong> {selectedActivity.startTime.split(' ')[0]}</p>
                         <p><strong>Description:</strong> {selectedActivity.description}</p>
-                        <p><strong>StartTime:</strong>{selectedActivity.startTime.split('T')[1].split('Z')[0].split('.')[0]}</p>
-                        <p><strong>EndTime:</strong>{selectedActivity.endTime.split('T')[1].split('Z')[0].split('.')[0]}</p>
+                        <p><strong>StartTime:</strong>{selectedActivity.startTime}</p>
+                        <p><strong>EndTime:</strong>{selectedActivity.endTime}</p>
                         <p><strong>Status:</strong> {selectedActivity.status}</p>
                         <button onClick={() => setShowDetailsModal(false)}>Close</button>
                     </div>

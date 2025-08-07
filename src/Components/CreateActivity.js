@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../ComponentsCSS/CreateActivityCSS.css';
+import dayjs from "dayjs";
 
 const CreateActivity = () => {
     const [activity, setActivity] = useState({
@@ -75,8 +76,14 @@ const CreateActivity = () => {
     const handleCreateActivity = async () => {
         try {
             // 创建一个新的活动对象，将 tags 字段重命名为 tagIds
+            const formatTime = (timeStr) => {
+                return timeStr ? dayjs(timeStr).format('YYYY/MM/DD HH:mm') : '';
+            };
+
             const activityToSend = {
                 ...activity,
+                startTime: formatTime(activity.startTime),
+                endTime: formatTime(activity.endTime),
                 tagIds: activity.tags // 将 tags 字段重命名为 tagIds
             };
 

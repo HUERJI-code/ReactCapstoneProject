@@ -128,7 +128,7 @@ const ManageActivities = () => {
                         <div className="table-row" key={activity.activityId}>
                             <div className="table-cell">{activity.title}</div>
                             <div className="table-cell">{activity.location}</div>
-                            <div className="table-cell">{activity.startTime.split('T')[0]}</div>
+                            <div className="table-cell">{activity.startTime}</div>
                             <div className="table-cell">{activity.status}</div>
                             <div className="table-cell">
                                 <button
