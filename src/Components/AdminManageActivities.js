@@ -67,7 +67,7 @@ const AdminManageActivities = () => {
                         <td>{activity.activityId}</td>
                         <td>{activity.title}</td>
                         <td>{activity.location}</td>
-                        <td>{activity.startTime.split('T')[0]}</td>
+                        <td>{activity.startTime.split(' ')[0]}</td>
                         <td>{activity.status}</td>
                         <td>
                             {activity.status !== 'banned' ? (
