@@ -1,3 +1,4 @@
+/* ManageChannelCSS.css */
 .manage-channels-container {
     padding: 20px;
     max-width: 1200px;
@@ -44,7 +45,8 @@ h2 {
     border-radius: 4px;
 }
 
-.hide-btn, .customize-btn {
+.hide-btn,
+.customize-btn {
     padding: 8px 16px;
     background: none;
     border: 1px solid #ddd;
@@ -54,7 +56,6 @@ h2 {
 
 .channels-table {
     width: 100%;
-    border-collapse: collapse;
 }
 
 .table-header {
@@ -82,7 +83,8 @@ h2 {
     flex: 1;
 }
 
-.edit-btn, .cancel-btn {
+.edit-btn,
+.cancel-btn {
     padding: 6px 12px;
     margin-left: 10px;
     border: none;
@@ -134,7 +136,8 @@ label {
     font-weight: 500;
 }
 
-input, textarea {
+input,
+textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
@@ -206,6 +209,7 @@ textarea {
 
 .tag-modal h3 {
     margin-bottom: 20px;
+    text-align: center;
 }
 
 .tags-container {
@@ -225,6 +229,32 @@ textarea {
 .tag-item.selected {
     background-color: #d4e6ff;
     color: #1890ff;
+}
+
+/* Pagination controls */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.page-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.page-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.page-info {
+    font-size: 14px;
+    color: #666;
 }
 
 .modal-footer {

@@ -1,7 +1,8 @@
+// CreateActivity.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../ComponentsCSS/CreateActivityCSS.css';
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 const CreateActivity = () => {
     const [activity, setActivity] = useState({
@@ -14,21 +15,34 @@ const CreateActivity = () => {
         url: '',
         tags: [] // 存储选中的标签ID
     });
-    const [tags, setTags] = useState([]);
     const [allTags, setAllTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
     const [selectedTags, setSelectedTags] = useState([]);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const tagsPerPage = 10;
+
+    // Compute total pages
+    const totalPages = Math.ceil(allTags.length / tagsPerPage);
+
     useEffect(() => {
         fetchAllTags();
     }, []);
+
+    // Reset to first page whenever modal opens or tag list updates
+    useEffect(() => {
+        if (showTagModal) {
+            setCurrentPage(1);
+        }
+    }, [showTagModal, allTags]);
 
     const fetchAllTags = async () => {
         try {
             const response = await axios.get('https://localhost:7085/api/Tag');
             setAllTags(response.data);
         } catch (error) {
-            console.error("Failed to fetch tags:", error);
+            console.error('Failed to fetch tags:', error);
         }
     };
 
@@ -37,21 +51,12 @@ const CreateActivity = () => {
         if (name === 'startTime' || name === 'endTime') {
             if (value) {
                 const dateTimeStr = value + ':00.000Z';
-                setActivity({
-                    ...activity,
-                    [name]: dateTimeStr
-                });
+                setActivity({ ...activity, [name]: dateTimeStr });
             } else {
-                setActivity({
-                    ...activity,
-                    [name]: ''
-                });
+                setActivity({ ...activity, [name]: '' });
             }
         } else {
-            setActivity({
-                ...activity,
-                [name]: value
-            });
+            setActivity({ ...activity, [name]: value });
         }
     };
 
@@ -69,27 +74,27 @@ const CreateActivity = () => {
         setSelectedTags(selectedTags.filter(tag => tag.tagId !== tagId));
         setActivity({
             ...activity,
-            tags: activity.tags.filter(tagIdItem => tagIdItem !== tagId)
+            tags: activity.tags.filter(id => id !== tagId)
         });
     };
 
     const handleCreateActivity = async () => {
         try {
-            // 创建一个新的活动对象，将 tags 字段重命名为 tagIds
-            const formatTime = (timeStr) => {
-                return timeStr ? dayjs(timeStr).format('YYYY/MM/DD HH:mm') : '';
-            };
+            const formatTime = (timeStr) =>
+                timeStr ? dayjs(timeStr).format('YYYY/MM/DD HH:mm') : '';
 
             const activityToSend = {
                 ...activity,
                 startTime: formatTime(activity.startTime),
                 endTime: formatTime(activity.endTime),
-                tagIds: activity.tags // 将 tags 字段重命名为 tagIds
+                tagIds: activity.tags
             };
 
             console.log(activityToSend);
             await axios.post('https://localhost:7085/api/Activity/create', activityToSend);
             alert('Activity created successfully!');
+
+            // Reset form
             setActivity({
                 title: '',
                 description: '',
@@ -102,16 +107,22 @@ const CreateActivity = () => {
             });
             setSelectedTags([]);
         } catch (error) {
-            console.error("Failed to create activity:", error);
+            console.error('Failed to create activity:', error);
             alert('Failed to create activity. Please try again.');
         }
     };
+
+    // Determine which tags to show on the current page
+    const indexStart = (currentPage - 1) * tagsPerPage;
+    const indexEnd = indexStart + tagsPerPage;
+    const paginatedTags = allTags.slice(indexStart, indexEnd);
 
     return (
         <div className="create-activity-container">
             <div className="create-activity-card">
                 <h2>Create Activity</h2>
                 <form>
+                    {/* Title */}
                     <div className="form-group">
                         <label>Title</label>
                         <input
@@ -124,6 +135,7 @@ const CreateActivity = () => {
                         />
                     </div>
 
+                    {/* Description */}
                     <div className="form-group">
                         <label>Description</label>
                         <textarea
@@ -135,6 +147,7 @@ const CreateActivity = () => {
                         />
                     </div>
 
+                    {/* Location */}
                     <div className="form-group">
                         <label>Location</label>
                         <input
@@ -147,28 +160,39 @@ const CreateActivity = () => {
                         />
                     </div>
 
+                    {/* Start Time */}
                     <div className="form-group">
                         <label>Start Time</label>
                         <input
                             type="datetime-local"
                             name="startTime"
-                            value={activity.startTime ? new Date(activity.startTime).toISOString().slice(0, 16) : ''}
+                            value={
+                                activity.startTime
+                                    ? new Date(activity.startTime).toISOString().slice(0, 16)
+                                    : ''
+                            }
                             onChange={handleInputChange}
                             required
                         />
                     </div>
 
+                    {/* End Time */}
                     <div className="form-group">
                         <label>End Time</label>
                         <input
                             type="datetime-local"
                             name="endTime"
-                            value={activity.endTime ? new Date(activity.endTime).toISOString().slice(0, 16) : ''}
+                            value={
+                                activity.endTime
+                                    ? new Date(activity.endTime).toISOString().slice(0, 16)
+                                    : ''
+                            }
                             onChange={handleInputChange}
                             required
                         />
                     </div>
 
+                    {/* Number */}
                     <div className="form-group">
                         <label>Number</label>
                         <input
@@ -181,6 +205,7 @@ const CreateActivity = () => {
                         />
                     </div>
 
+                    {/* URL */}
                     <div className="form-group">
                         <label>URL</label>
                         <input
@@ -192,6 +217,7 @@ const CreateActivity = () => {
                         />
                     </div>
 
+                    {/* Tags */}
                     <div className="tag-section">
                         <label>Tags</label>
                         <div className="tag-container">
@@ -217,16 +243,19 @@ const CreateActivity = () => {
                         </div>
                     </div>
 
+                    {/* Tag Selection Modal */}
                     {showTagModal && (
                         <div className="tag-modal-overlay">
                             <div className="tag-modal">
                                 <h3>Please select your activity tags</h3>
                                 <div className="tags-container">
-                                    {allTags.map(tag => (
+                                    {paginatedTags.map(tag => (
                                         <div
                                             key={tag.tagId}
                                             className={`tag-item ${
-                                                selectedTags.some(t => t.tagId === tag.tagId) ? 'selected' : ''
+                                                selectedTags.some(t => t.tagId === tag.tagId)
+                                                    ? 'selected'
+                                                    : ''
                                             }`}
                                             onClick={() => handleTagSelect(tag)}
                                         >
@@ -234,6 +263,31 @@ const CreateActivity = () => {
                                         </div>
                                     ))}
                                 </div>
+
+                                {totalPages > 1 && (
+                                    <div className="pagination">
+                                        <button
+                                            type="button"
+                                            className="page-btn"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            ‹
+                                        </button>
+                                        <span className="page-info">
+                      Page {currentPage} / {totalPages}
+                    </span>
+                                        <button
+                                            type="button"
+                                            className="page-btn"
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            ›
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div className="modal-footer">
                                     <button
                                         type="button"
@@ -247,6 +301,7 @@ const CreateActivity = () => {
                         </div>
                     )}
 
+                    {/* Form Actions */}
                     <div className="form-actions">
                         <button
                             type="button"

@@ -1,3 +1,4 @@
+// CreateChannel.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../ComponentsCSS/CreateChannelCSS.css';
@@ -9,33 +10,41 @@ const CreateChannel = () => {
         description: '',
         tagIds: []
     });
-    const [tags, setTags] = useState([]);
     const [allTags, setAllTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
     const [selectedTags, setSelectedTags] = useState([]);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const tagsPerPage = 10;
+    const totalPages = Math.ceil(allTags.length / tagsPerPage);
+
     useEffect(() => {
         fetchAllTags();
     }, []);
+
+    // Reset to first page whenever modal opens or tags list changes
+    useEffect(() => {
+        if (showTagModal) {
+            setCurrentPage(1);
+        }
+    }, [showTagModal, allTags]);
 
     const fetchAllTags = async () => {
         try {
             const response = await axios.get('https://localhost:7085/api/Tag');
             setAllTags(response.data);
         } catch (error) {
-            console.error("Failed to fetch tags:", error);
+            console.error('Failed to fetch tags:', error);
         }
     };
 
-    const handleInputChange = (e) => {
+    const handleInputChange = e => {
         const { name, value } = e.target;
-        setChannel({
-            ...channel,
-            [name]: value
-        });
+        setChannel({ ...channel, [name]: value });
     };
 
-    const handleTagSelect = (tag) => {
+    const handleTagSelect = tag => {
         if (!selectedTags.some(t => t.tagId === tag.tagId)) {
             setSelectedTags([...selectedTags, tag]);
             setChannel({
@@ -45,11 +54,11 @@ const CreateChannel = () => {
         }
     };
 
-    const handleTagRemove = (tagId) => {
-        setSelectedTags(selectedTags.filter(tag => tag.tagId !== tagId));
+    const handleTagRemove = tagId => {
+        setSelectedTags(selectedTags.filter(t => t.tagId !== tagId));
         setChannel({
             ...channel,
-            tagIds: channel.tagIds.filter(tagIdItem => tagIdItem !== tagId)
+            tagIds: channel.tagIds.filter(id => id !== tagId)
         });
     };
 
@@ -57,18 +66,17 @@ const CreateChannel = () => {
         try {
             await axios.post('https://localhost:7085/api/Channel/create', channel);
             alert('Create Request Has Been Submitted');
-            setChannel({
-                name: '',
-                url: '',
-                description: '',
-                tagIds: []
-            });
+            setChannel({ name: '', url: '', description: '', tagIds: [] });
             setSelectedTags([]);
         } catch (error) {
-            console.error("Failed to create channel:", error);
+            console.error('Failed to create channel:', error);
             alert('Failed to create channel. Please try again.');
         }
     };
+
+    // Determine slice of tags for current page
+    const startIdx = (currentPage - 1) * tagsPerPage;
+    const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
 
     return (
         <div className="create-channel-container">
@@ -115,15 +123,15 @@ const CreateChannel = () => {
                         <div className="tag-container">
                             {selectedTags.map(tag => (
                                 <span key={tag.tagId} className="selected-tag">
-                                    {tag.name}
+                  {tag.name}
                                     <button
                                         type="button"
-                                        onClick={() => handleTagRemove(tag.tagId)}
                                         className="remove-tag"
+                                        onClick={() => handleTagRemove(tag.tagId)}
                                     >
-                                        ×
-                                    </button>
-                                </span>
+                    ×
+                  </button>
+                </span>
                             ))}
                             <button
                                 type="button"
@@ -140,11 +148,13 @@ const CreateChannel = () => {
                             <div className="tag-modal">
                                 <h3>Please select your channel tags</h3>
                                 <div className="tags-container">
-                                    {allTags.map(tag => (
+                                    {paginatedTags.map(tag => (
                                         <div
                                             key={tag.tagId}
                                             className={`tag-item ${
-                                                selectedTags.some(t => t.tagId === tag.tagId) ? 'selected' : ''
+                                                selectedTags.some(t => t.tagId === tag.tagId)
+                                                    ? 'selected'
+                                                    : ''
                                             }`}
                                             onClick={() => handleTagSelect(tag)}
                                         >
@@ -152,6 +162,31 @@ const CreateChannel = () => {
                                         </div>
                                     ))}
                                 </div>
+
+                                {totalPages > 1 && (
+                                    <div className="pagination">
+                                        <button
+                                            type="button"
+                                            className="page-btn"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            ‹
+                                        </button>
+                                        <span className="page-info">
+                      Page {currentPage} / {totalPages}
+                    </span>
+                                        <button
+                                            type="button"
+                                            className="page-btn"
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            ›
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div className="modal-footer">
                                     <button
                                         type="button"

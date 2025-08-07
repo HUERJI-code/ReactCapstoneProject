@@ -1,3 +1,4 @@
+// ManageActivities.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../ComponentsCSS/ManageActivitiesCSS.css';
@@ -6,15 +7,26 @@ const ManageActivities = () => {
     const [activities, setActivities] = useState([]);
     const [editingActivity, setEditingActivity] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [tags, setTags] = useState([]);
     const [allTags, setAllTags] = useState([]);
     const [selectedTags, setSelectedTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
+
+    // Pagination state for tag modal
+    const [currentPage, setCurrentPage] = useState(1);
+    const tagsPerPage = 10;
+    const totalPages = Math.ceil(allTags.length / tagsPerPage);
 
     useEffect(() => {
         fetchActivities();
         fetchAllTags();
     }, []);
+
+    // Reset to first page when opening the tag modal or when tags change
+    useEffect(() => {
+        if (showTagModal) {
+            setCurrentPage(1);
+        }
+    }, [showTagModal, allTags]);
 
     const fetchActivities = async () => {
         try {
@@ -35,9 +47,10 @@ const ManageActivities = () => {
     };
 
     const handleEditClick = (activity) => {
-        // 提取标签ID
         const tagIds = activity.tags ? activity.tags.map(tag => tag.tagId) : [];
-        setSelectedTags(tagIds.map(tagId => allTags.find(tag => tag.tagId === tagId)));
+        setSelectedTags(
+            tagIds.map(id => allTags.find(tag => tag.tagId === id)).filter(Boolean)
+        );
         setEditingActivity(activity);
         setShowEditModal(true);
     };
@@ -45,18 +58,10 @@ const ManageActivities = () => {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         if (name === 'startTime' || name === 'endTime') {
-            if (value) {
-                const dateTimeStr = value + ':00.000Z';
-                setEditingActivity({
-                    ...editingActivity,
-                    [name]: dateTimeStr
-                });
-            } else {
-                setEditingActivity({
-                    ...editingActivity,
-                    [name]: ''
-                });
-            }
+            setEditingActivity({
+                ...editingActivity,
+                [name]: value ? value + ':00.000Z' : ''
+            });
         } else {
             setEditingActivity({
                 ...editingActivity,
@@ -81,8 +86,10 @@ const ManageActivities = () => {
                 ...editingActivity,
                 tagIds: selectedTags.map(tag => tag.tagId)
             };
-
-            await axios.put(`https://localhost:7085/api/Activity/update/${editingActivity.activityId}`, activityToUpdate);
+            await axios.put(
+                `https://localhost:7085/api/Activity/update/${editingActivity.activityId}`,
+                activityToUpdate
+            );
             alert('Activity updated successfully!');
             setShowEditModal(false);
             fetchActivities();
@@ -98,9 +105,14 @@ const ManageActivities = () => {
         setSelectedTags([]);
     };
 
+    // Compute paginated slice of allTags for the tag modal
+    const startIdx = (currentPage - 1) * tagsPerPage;
+    const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
+
     return (
         <div className="manage-activities-container">
             <h2>My Activities</h2>
+
             <div className="activities-header">
                 <div className="view-options">
                     <button className="overview-btn">📊 Overview</button>
@@ -149,6 +161,7 @@ const ManageActivities = () => {
                     <div className="edit-modal">
                         <h3>Edit Activity</h3>
                         <form>
+                            {/* Title */}
                             <div className="form-group">
                                 <label>Title</label>
                                 <input
@@ -156,22 +169,22 @@ const ManageActivities = () => {
                                     name="title"
                                     value={editingActivity.title}
                                     onChange={handleInputChange}
-                                    placeholder="Enter title"
                                     required
                                 />
                             </div>
 
+                            {/* Description */}
                             <div className="form-group">
                                 <label>Description</label>
                                 <textarea
                                     name="description"
                                     value={editingActivity.description}
                                     onChange={handleInputChange}
-                                    placeholder="Enter description"
                                     required
                                 />
                             </div>
 
+                            {/* Location */}
                             <div className="form-group">
                                 <label>Location</label>
                                 <input
@@ -179,11 +192,11 @@ const ManageActivities = () => {
                                     name="location"
                                     value={editingActivity.location}
                                     onChange={handleInputChange}
-                                    placeholder="Enter location"
                                     required
                                 />
                             </div>
 
+                            {/* Start Time */}
                             <div className="form-group">
                                 <label>Start Time</label>
                                 <input
@@ -195,6 +208,7 @@ const ManageActivities = () => {
                                 />
                             </div>
 
+                            {/* End Time */}
                             <div className="form-group">
                                 <label>End Time</label>
                                 <input
@@ -206,6 +220,7 @@ const ManageActivities = () => {
                                 />
                             </div>
 
+                            {/* Number */}
                             <div className="form-group">
                                 <label>Number</label>
                                 <input
@@ -213,11 +228,11 @@ const ManageActivities = () => {
                                     name="number"
                                     value={editingActivity.number}
                                     onChange={handleInputChange}
-                                    placeholder="Enter number"
                                     required
                                 />
                             </div>
 
+                            {/* URL */}
                             <div className="form-group">
                                 <label>URL</label>
                                 <input
@@ -225,10 +240,10 @@ const ManageActivities = () => {
                                     name="url"
                                     value={editingActivity.url}
                                     onChange={handleInputChange}
-                                    placeholder="Enter URL"
                                 />
                             </div>
 
+                            {/* Tags */}
                             <div className="tag-section">
                                 <label>Tags</label>
                                 <div className="tag-container">
@@ -237,8 +252,8 @@ const ManageActivities = () => {
                       {tag.name}
                                             <button
                                                 type="button"
-                                                onClick={() => handleTagRemove(tag.tagId)}
                                                 className="remove-tag"
+                                                onClick={() => handleTagRemove(tag.tagId)}
                                             >
                         ×
                       </button>
@@ -254,12 +269,13 @@ const ManageActivities = () => {
                                 </div>
                             </div>
 
+                            {/* Tag-Selection Modal */}
                             {showTagModal && (
                                 <div className="tag-modal-overlay">
                                     <div className="tag-modal">
                                         <h3>Please select your activity tags</h3>
                                         <div className="tags-container">
-                                            {allTags.map(tag => (
+                                            {paginatedTags.map(tag => (
                                                 <div
                                                     key={tag.tagId}
                                                     className={`tag-item ${
@@ -271,6 +287,31 @@ const ManageActivities = () => {
                                                 </div>
                                             ))}
                                         </div>
+
+                                        {totalPages > 1 && (
+                                            <div className="pagination">
+                                                <button
+                                                    type="button"
+                                                    className="page-btn"
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={currentPage === 1}
+                                                >
+                                                    ‹
+                                                </button>
+                                                <span className="page-info">
+                          Page {currentPage} / {totalPages}
+                        </span>
+                                                <button
+                                                    type="button"
+                                                    className="page-btn"
+                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={currentPage === totalPages}
+                                                >
+                                                    ›
+                                                </button>
+                                            </div>
+                                        )}
+
                                         <div className="modal-footer">
                                             <button
                                                 type="button"
@@ -284,6 +325,7 @@ const ManageActivities = () => {
                                 </div>
                             )}
 
+                            {/* Form Actions */}
                             <div className="form-actions">
                                 <button
                                     type="button"

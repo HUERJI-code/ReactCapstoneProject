@@ -1,3 +1,4 @@
+// ManageChannel.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../ComponentsCSS/ManageChannelCSS.css';
@@ -6,15 +7,26 @@ const ManageChannel = () => {
     const [channels, setChannels] = useState([]);
     const [editingChannel, setEditingChannel] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [tags, setTags] = useState([]);
     const [allTags, setAllTags] = useState([]);
     const [selectedTags, setSelectedTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
+
+    // Pagination state for tag modal
+    const [currentPage, setCurrentPage] = useState(1);
+    const tagsPerPage = 10;
+    const totalPages = Math.ceil(allTags.length / tagsPerPage);
 
     useEffect(() => {
         fetchChannels();
         fetchAllTags();
     }, []);
+
+    // Reset to first page whenever tag modal opens or tag list changes
+    useEffect(() => {
+        if (showTagModal) {
+            setCurrentPage(1);
+        }
+    }, [showTagModal, allTags]);
 
     const fetchChannels = async () => {
         try {
@@ -35,19 +47,17 @@ const ManageChannel = () => {
     };
 
     const handleEditClick = (channel) => {
-        const tagIds = channel.tags ? channel.tags.map(tag=>tag.tagId) : [];
-        console.log(tagIds);
-        setSelectedTags(tagIds.map(tagId => allTags.find(t => t.tagId === tagId)));
+        const tagIds = channel.tags ? channel.tags.map(tag => tag.tagId) : [];
+        setSelectedTags(
+            tagIds.map(id => allTags.find(t => t.tagId === id)).filter(Boolean)
+        );
         setEditingChannel(channel);
         setShowEditModal(true);
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setEditingChannel({
-            ...editingChannel,
-            [name]: value
-        });
+        setEditingChannel({ ...editingChannel, [name]: value });
     };
 
     const handleTagSelect = (tag) => {
@@ -62,16 +72,15 @@ const ManageChannel = () => {
 
     const handleUpdateChannel = async () => {
         try {
-            const { channelId, name, url, description } = editingChannel; // 使用解构赋值获取需要的字段
+            const { channelId, name, url, description } = editingChannel;
             const channelToUpdate = {
-                "id":channelId,
+                id: channelId,
                 name,
                 url,
                 description,
                 tagIds: selectedTags.map(tag => tag.tagId)
             };
-            console.log(channelToUpdate);
-            await axios.post(`https://localhost:7085/updateChannel`, channelToUpdate);
+            await axios.post('https://localhost:7085/updateChannel', channelToUpdate);
             alert('Channel updated successfully!');
             setShowEditModal(false);
             fetchChannels();
@@ -87,9 +96,14 @@ const ManageChannel = () => {
         setSelectedTags([]);
     };
 
+    // Slice tags for current page
+    const startIdx = (currentPage - 1) * tagsPerPage;
+    const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
+
     return (
         <div className="manage-channels-container">
             <h2>Manage Channels</h2>
+
             <div className="channels-header">
                 <div className="view-options">
                     <button className="overview-btn">📊 Overview</button>
@@ -113,17 +127,14 @@ const ManageChannel = () => {
                     <div className="table-cell">Actions</div>
                 </div>
                 <div className="table-body">
-                    {channels.map(channel => (
-                        <div className="table-row" key={channel.id}>
-                            <div className="table-cell">{channel.name}</div>
-                            <div className="table-cell">{channel.url}</div>
-                            <div className="table-cell">{channel.description}</div>
-                            <div className="table-cell">{channel.status}</div>
+                    {channels.map(ch => (
+                        <div className="table-row" key={ch.id}>
+                            <div className="table-cell">{ch.name}</div>
+                            <div className="table-cell">{ch.url}</div>
+                            <div className="table-cell">{ch.description}</div>
+                            <div className="table-cell">{ch.status}</div>
                             <div className="table-cell">
-                                <button
-                                    className="edit-btn"
-                                    onClick={() => handleEditClick(channel)}
-                                >
+                                <button className="edit-btn" onClick={() => handleEditClick(ch)}>
                                     Edit
                                 </button>
                                 <button className="cancel-btn">Cancel</button>
@@ -138,6 +149,7 @@ const ManageChannel = () => {
                     <div className="edit-modal">
                         <h3>Edit Channel</h3>
                         <form>
+                            {/* Name */}
                             <div className="form-group">
                                 <label>Name</label>
                                 <input
@@ -145,22 +157,22 @@ const ManageChannel = () => {
                                     name="name"
                                     value={editingChannel.name}
                                     onChange={handleInputChange}
-                                    placeholder="Enter channel name"
                                     required
                                 />
                             </div>
 
+                            {/* Description */}
                             <div className="form-group">
                                 <label>Description</label>
                                 <textarea
                                     name="description"
                                     value={editingChannel.description}
                                     onChange={handleInputChange}
-                                    placeholder="Enter channel description"
                                     required
                                 />
                             </div>
 
+                            {/* URL */}
                             <div className="form-group">
                                 <label>URL</label>
                                 <input
@@ -168,11 +180,11 @@ const ManageChannel = () => {
                                     name="url"
                                     value={editingChannel.url}
                                     onChange={handleInputChange}
-                                    placeholder="Enter channel URL"
                                     required
                                 />
                             </div>
 
+                            {/* Tags */}
                             <div className="tag-section">
                                 <label>Tags</label>
                                 <div className="tag-container">
@@ -181,8 +193,8 @@ const ManageChannel = () => {
                       {tag.name}
                                             <button
                                                 type="button"
-                                                onClick={() => handleTagRemove(tag.tagId)}
                                                 className="remove-tag"
+                                                onClick={() => handleTagRemove(tag.tagId)}
                                             >
                         ×
                       </button>
@@ -198,16 +210,19 @@ const ManageChannel = () => {
                                 </div>
                             </div>
 
+                            {/* Tag-selection modal */}
                             {showTagModal && (
                                 <div className="tag-modal-overlay">
                                     <div className="tag-modal">
                                         <h3>Please select your channel tags</h3>
                                         <div className="tags-container">
-                                            {allTags.map(tag => (
+                                            {paginatedTags.map(tag => (
                                                 <div
                                                     key={tag.tagId}
                                                     className={`tag-item ${
-                                                        selectedTags.some(t => t.tagId === tag.tagId) ? 'selected' : ''
+                                                        selectedTags.some(t => t.tagId === tag.tagId)
+                                                            ? 'selected'
+                                                            : ''
                                                     }`}
                                                     onClick={() => handleTagSelect(tag)}
                                                 >
@@ -215,6 +230,31 @@ const ManageChannel = () => {
                                                 </div>
                                             ))}
                                         </div>
+
+                                        {totalPages > 1 && (
+                                            <div className="pagination">
+                                                <button
+                                                    type="button"
+                                                    className="page-btn"
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={currentPage === 1}
+                                                >
+                                                    ‹
+                                                </button>
+                                                <span className="page-info">
+                          Page {currentPage} / {totalPages}
+                        </span>
+                                                <button
+                                                    type="button"
+                                                    className="page-btn"
+                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={currentPage === totalPages}
+                                                >
+                                                    ›
+                                                </button>
+                                            </div>
+                                        )}
+
                                         <div className="modal-footer">
                                             <button
                                                 type="button"
@@ -228,6 +268,7 @@ const ManageChannel = () => {
                                 </div>
                             )}
 
+                            {/* Form actions */}
                             <div className="form-actions">
                                 <button
                                     type="button"
