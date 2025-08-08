@@ -10,6 +10,7 @@ export default function OrganizerRegister() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [inviteCode, setInviteCode] = useState('');
 
     const navigate = useNavigate();
 
@@ -19,6 +20,10 @@ export default function OrganizerRegister() {
         try {
             if (password !== confirmPassword) {
                 alert("Passwords do not match!");
+                return;
+            }
+            if(inviteCode !== "123456") {
+                alert("Invite Code do not match!");
                 return;
             }
 
@@ -110,6 +115,18 @@ export default function OrganizerRegister() {
                         />
                     </div>
 
+                    <div className="mb-3">
+                        <label className="form-label">Invite Code</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Invite Code"
+                            value={inviteCode}
+                            onChange={(e) => setInviteCode(e.target.value)}
+                            required
+                        />
+                    </div>
+
                     <button type="submit" className="btn btn-primary w-100 mb-3" onClick={handleSignUpClick}>
                         SignUp with UniSphere
                     </button>
@@ -129,7 +146,7 @@ export default function OrganizerRegister() {
                 </button>
 
                 <p className="tos">
-                    By clicking the button above, you agree to our{' '}
+                By clicking the button above, you agree to our{' '}
                     <a href="/terms">Terms of Service</a> and{' '}
                     <a href="/privacy">Privacy Policy</a>
                 </p>
