@@ -30,7 +30,7 @@ const ManageActivities = () => {
 
     const fetchActivities = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Activity');
+            const response = await axios.get('https://localhost:7085/getLoginOrganizerActivities');
             setActivities(response.data);
         } catch (error) {
             console.error("Failed to fetch activities:", error);
