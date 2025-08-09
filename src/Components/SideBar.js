@@ -39,7 +39,7 @@ const Sidebar = () => {
             const status = err?.response?.status;
             if (status === 401) {
                 // 未登录跳转到登录页
-                navigate("/OrganizerLogin");
+                navigate("/");
                 return;
             }
             console.error("checkLoginStatus error:", err?.response || err);
