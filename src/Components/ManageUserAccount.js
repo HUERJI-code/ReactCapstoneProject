@@ -1,43 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/ManageUserAccountCSS.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/ManageUserAccountCSS.css";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const ManageUserAccount = () => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
         fetchUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/User');
-            setUsers(response.data);
-            console.log(response.data);
+            const res = await api.get("/api/User");
+            setUsers(res.data || []);
+            // console.log(res.data);
         } catch (error) {
-            console.error("Failed to fetch users:", error);
+            console.error("Failed to fetch users:", error?.response || error);
+            alert("Failed to fetch users.");
         }
     };
 
     const handleBanUser = async (userId) => {
         try {
-            await axios.put(`https://localhost:7085/banUser?id=${userId}`);
-            alert('User banned successfully!');
-            fetchUsers(); // Refresh users list after ban
+            await api.put("/banUser", null, { params: { id: userId } });
+            alert("User banned successfully!");
+            fetchUsers();
         } catch (error) {
-            console.error("Failed to ban user:", error);
-            alert('Failed to ban user. Please try again.');
+            console.error("Failed to ban user:", error?.response || error);
+            alert("Failed to ban user. Please try again.");
         }
     };
 
     const handleUnbanUser = async (userId) => {
         try {
-            await axios.put(`https://localhost:7085/UnbanUser?id=${userId}`);
-            alert('User unbanned successfully!');
-            fetchUsers(); // Refresh users list after unban
+            await api.put("/UnbanUser", null, { params: { id: userId } });
+            alert("User unbanned successfully!");
+            fetchUsers();
         } catch (error) {
-            console.error("Failed to unban user:", error);
-            alert('Failed to unban user. Please try again.');
+            console.error("Failed to unban user:", error?.response || error);
+            alert("Failed to unban user. Please try again.");
         }
     };
 
@@ -57,7 +68,7 @@ const ManageUserAccount = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {users.map(user => (
+                {users.map((user) => (
                     <tr key={user.userId}>
                         <td>{user.userId}</td>
                         <td>{user.name}</td>
@@ -66,10 +77,20 @@ const ManageUserAccount = () => {
                         <td>{user.role}</td>
                         <td>{user.status}</td>
                         <td>
-                            {user.status === 'active' ? (
-                                <button className="ban-button" onClick={() => handleBanUser(user.userId)}>Ban</button>
+                            {user.status === "active" ? (
+                                <button
+                                    className="ban-button"
+                                    onClick={() => handleBanUser(user.userId)}
+                                >
+                                    Ban
+                                </button>
                             ) : (
-                                <button className="unban-button" onClick={() => handleUnbanUser(user.userId)}>Unban</button>
+                                <button
+                                    className="unban-button"
+                                    onClick={() => handleUnbanUser(user.userId)}
+                                >
+                                    Unban
+                                </button>
                             )}
                         </td>
                     </tr>

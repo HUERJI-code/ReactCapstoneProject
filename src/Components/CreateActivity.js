@@ -1,19 +1,28 @@
 // CreateActivity.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/CreateActivityCSS.css';
-import dayjs from 'dayjs';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/CreateActivityCSS.css";
+import dayjs from "dayjs";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const CreateActivity = () => {
     const [activity, setActivity] = useState({
-        title: '',
-        description: '',
-        location: '',
-        startTime: '',
-        endTime: '',
-        number: '',
-        url: '',
-        tags: [] // 存储选中的标签ID
+        title: "",
+        description: "",
+        location: "",
+        startTime: "",
+        endTime: "",
+        number: "",
+        url: "",
+        tags: [], // 存储选中的标签ID
     });
     const [allTags, setAllTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
@@ -39,76 +48,75 @@ const CreateActivity = () => {
 
     const fetchAllTags = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Tag');
-            setAllTags(response.data);
+            const res = await api.get("/api/Tag");
+            setAllTags(res.data || []);
         } catch (error) {
-            console.error('Failed to fetch tags:', error);
+            console.error("Failed to fetch tags:", error);
         }
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'startTime' || name === 'endTime') {
+        if (name === "startTime" || name === "endTime") {
             if (value) {
-                const dateTimeStr = value + ':00.000Z';
-                setActivity({ ...activity, [name]: dateTimeStr });
+                const dateTimeStr = value + ":00.000Z";
+                setActivity((prev) => ({ ...prev, [name]: dateTimeStr }));
             } else {
-                setActivity({ ...activity, [name]: '' });
+                setActivity((prev) => ({ ...prev, [name]: "" }));
             }
         } else {
-            setActivity({ ...activity, [name]: value });
+            setActivity((prev) => ({ ...prev, [name]: value }));
         }
     };
 
     const handleTagSelect = (tag) => {
-        if (!selectedTags.some(t => t.tagId === tag.tagId)) {
+        if (!selectedTags.some((t) => t.tagId === tag.tagId)) {
             setSelectedTags([...selectedTags, tag]);
-            setActivity({
-                ...activity,
-                tags: [...activity.tags, tag.tagId]
-            });
+            setActivity((prev) => ({
+                ...prev,
+                tags: [...prev.tags, tag.tagId],
+            }));
         }
     };
 
     const handleTagRemove = (tagId) => {
-        setSelectedTags(selectedTags.filter(tag => tag.tagId !== tagId));
-        setActivity({
-            ...activity,
-            tags: activity.tags.filter(id => id !== tagId)
-        });
+        setSelectedTags(selectedTags.filter((t) => t.tagId !== tagId));
+        setActivity((prev) => ({
+            ...prev,
+            tags: prev.tags.filter((id) => id !== tagId),
+        }));
     };
 
     const handleCreateActivity = async () => {
         try {
             const formatTime = (timeStr) =>
-                timeStr ? dayjs(timeStr).format('YYYY/MM/DD HH:mm') : '';
+                timeStr ? dayjs(timeStr).format("YYYY/MM/DD HH:mm") : "";
 
             const activityToSend = {
                 ...activity,
                 startTime: formatTime(activity.startTime),
                 endTime: formatTime(activity.endTime),
-                tagIds: activity.tags
+                tagIds: activity.tags,
             };
 
-            console.log(activityToSend);
-            await axios.post('https://localhost:7085/api/Activity/create', activityToSend);
-            alert('Activity created successfully!');
+            await api.post("/api/Activity/create", activityToSend);
+            alert("Activity created successfully!");
 
             // Reset form
             setActivity({
-                title: '',
-                description: '',
-                location: '',
-                startTime: '',
-                endTime: '',
-                number: '',
-                url: '',
-                tags: []
+                title: "",
+                description: "",
+                location: "",
+                startTime: "",
+                endTime: "",
+                number: "",
+                url: "",
+                tags: [],
             });
             setSelectedTags([]);
         } catch (error) {
-            console.error('Failed to create activity:', error);
-            alert('Failed to create activity. Please try again.');
+            console.error("Failed to create activity:", error);
+            alert("Failed to create activity. Please try again.");
         }
     };
 
@@ -169,7 +177,7 @@ const CreateActivity = () => {
                             value={
                                 activity.startTime
                                     ? new Date(activity.startTime).toISOString().slice(0, 16)
-                                    : ''
+                                    : ""
                             }
                             onChange={handleInputChange}
                             required
@@ -185,7 +193,7 @@ const CreateActivity = () => {
                             value={
                                 activity.endTime
                                     ? new Date(activity.endTime).toISOString().slice(0, 16)
-                                    : ''
+                                    : ""
                             }
                             onChange={handleInputChange}
                             required
@@ -221,7 +229,7 @@ const CreateActivity = () => {
                     <div className="tag-section">
                         <label>Tags</label>
                         <div className="tag-container">
-                            {selectedTags.map(tag => (
+                            {selectedTags.map((tag) => (
                                 <span key={tag.tagId} className="selected-tag">
                   {tag.name}
                                     <button
@@ -249,13 +257,13 @@ const CreateActivity = () => {
                             <div className="tag-modal">
                                 <h3>Please select your activity tags</h3>
                                 <div className="tags-container">
-                                    {paginatedTags.map(tag => (
+                                    {paginatedTags.map((tag) => (
                                         <div
                                             key={tag.tagId}
                                             className={`tag-item ${
-                                                selectedTags.some(t => t.tagId === tag.tagId)
-                                                    ? 'selected'
-                                                    : ''
+                                                selectedTags.some((t) => t.tagId === tag.tagId)
+                                                    ? "selected"
+                                                    : ""
                                             }`}
                                             onClick={() => handleTagSelect(tag)}
                                         >
@@ -269,7 +277,7 @@ const CreateActivity = () => {
                                         <button
                                             type="button"
                                             className="page-btn"
-                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                             disabled={currentPage === 1}
                                         >
                                             ‹
@@ -280,7 +288,7 @@ const CreateActivity = () => {
                                         <button
                                             type="button"
                                             className="page-btn"
-                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
                                         >
                                             ›
@@ -303,11 +311,7 @@ const CreateActivity = () => {
 
                     {/* Form Actions */}
                     <div className="form-actions">
-                        <button
-                            type="button"
-                            className="create-btn"
-                            onClick={handleCreateActivity}
-                        >
+                        <button type="button" className="create-btn" onClick={handleCreateActivity}>
                             Create Activity
                         </button>
                     </div>

@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/ReviewRequestsCSS.css';
-import {useNavigate} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/ReviewRequestsCSS.css";
+import { useNavigate } from "react-router-dom";
+
+// ===== 后端地址（云端域名；本地联调用 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const ReviewRequests = () => {
     const [reviewRequests, setReviewRequests] = useState([]);
@@ -9,31 +18,31 @@ const ReviewRequests = () => {
 
     useEffect(() => {
         fetchReviewRequests();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchReviewRequests = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/getOrganizerActivityRegisterRequest');
-            setReviewRequests(response.data);
+            const res = await api.get("/getOrganizerActivityRegisterRequest");
+            setReviewRequests(res.data || []);
         } catch (error) {
-            console.error("Failed to fetch review requests:", error);
+            console.error("Failed to fetch review requests:", error?.response || error);
+            if (error?.response?.status === 401) navigate("/OrganizerLogin");
+            else alert("No pending review requests.");
         }
     };
 
     const handleReview = async (requestId, status) => {
         try {
-            await axios.put(`https://localhost:7085/api/Activity/review/${requestId}`, status,
-                {
-                    headers: {
-                        'Content-Type': 'application/json' // 保持 JSON 格式
-                    }
-                });
+            await api.put(`/api/Activity/review/${requestId}`, status, {
+                headers: { "Content-Type": "application/json" },
+            });
             alert(`Request ${requestId} has been ${status}.`);
-            fetchReviewRequests();
-            navigate(0);
+            await fetchReviewRequests();
+            navigate(0); // 刷新
         } catch (error) {
-            console.error("Failed to review request:", error);
-            alert('Failed to review request. Please try again.');
+            console.error("Failed to review request:", error?.response || error);
+            alert("Failed to review request. Please try again.");
         }
     };
 
@@ -49,28 +58,37 @@ const ReviewRequests = () => {
                     <div className="table-cell">Actions</div>
                 </div>
                 <div className="table-body">
-                    {reviewRequests.map(request => (
+                    {reviewRequests.map((request) => (
                         <div className="table-row" key={request.id}>
-                            <div className="table-cell">{request.user.name}</div>
-                            <div className="table-cell">{request.activity.title}</div>
-                            <div className="table-cell">{request.requestedAt.split('T')[0]}</div>
+                            <div className="table-cell">{request.user?.name}</div>
+                            <div className="table-cell">{request.activity?.title}</div>
+                            <div className="table-cell">
+                                {(request.requestedAt || "").split("T")[0]}
+                            </div>
                             <div className="table-cell">{request.status}</div>
                             <div className="table-cell">
                                 <button
                                     className="approve-btn"
-                                    onClick={() => handleReview(request.id, 'approved')}
+                                    onClick={() => handleReview(request.id, "approved")}
                                 >
                                     Approve
                                 </button>
                                 <button
                                     className="reject-btn"
-                                    onClick={() => handleReview(request.id, 'rejected')}
+                                    onClick={() => handleReview(request.id, "rejected")}
                                 >
                                     Reject
                                 </button>
                             </div>
                         </div>
                     ))}
+                    {reviewRequests.length === 0 && (
+                        <div className="table-row">
+                            <div className="table-cell" style={{ gridColumn: "1/-1", textAlign: "center" }}>
+                                No requests.
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,50 +1,56 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import '../PagesCSS/AdminLoginCSS.css'; // 确保路径正确
+import "../PagesCSS/AdminLoginCSS.css";
 
-const REST_API_URL = "https://localhost:7085/api/Login/login";
+// ===== 后端地址（云端域名；本地联调就改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 export default function AdminLogin() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
     async function handleLoginClick(e) {
         e.preventDefault();
-        console.log("login button is clicked");
         try {
-            const data = {
-                "identifier": email,
-                "passwordHash": password,
+            const body = {
+                identifier: email,
+                passwordHash: password,
             };
-            const response = await axios.post(REST_API_URL, data, {
-                withCredentials: true
-            });
 
-            if (response.status === 200) {
+            // 登录
+            const res = await api.post("/api/Login/login", body);
+            if (res.status === 200) {
                 await checkLoginUserType();
             }
-        } catch (error) {
+        } catch (err) {
+            console.error("Login failed:", err?.response || err);
             alert("Login failed. Please check your credentials!");
-            console.error(error);
         }
     }
 
     async function checkLoginUserType() {
         try {
-            const response = await axios.get("https://localhost:7085/checkLoginUserType");
-            if (response.status === 200) {
-                if (response.data.userType === "admin") {
+            // 登录后检查角色
+            const res = await api.get("/checkLoginUserType");
+            if (res.status === 200) {
+                if (res.data?.userType === "admin") {
                     alert("Admin Login successfully!");
                     navigate("/AdminDashboard");
                 } else {
                     alert("Login failed. Your account is not authorized as an admin.");
                 }
             }
-        } catch (error) {
-            console.error("Failed to fetch user type:", error);
+        } catch (err) {
+            console.error("Failed to fetch user type:", err?.response || err);
+            alert("Failed to verify user type.");
         }
     }
 
@@ -79,7 +85,11 @@ export default function AdminLogin() {
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary w-100 mb-3" onClick={handleLoginClick}>
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-100 mb-3"
+                        onClick={handleLoginClick}
+                    >
                         Login
                     </button>
                 </form>
@@ -98,8 +108,8 @@ export default function AdminLogin() {
                 </button>
 
                 <p className="tos">
-                    By clicking the button above, you agree to our{' '}
-                    <a href="/terms">Terms of Service</a> and{' '}
+                    By clicking the button above, you agree to our{" "}
+                    <a href="/terms">Terms of Service</a> and{" "}
                     <a href="/privacy">Privacy Policy</a>
                 </p>
 

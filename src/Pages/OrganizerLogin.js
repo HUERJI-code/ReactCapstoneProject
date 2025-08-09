@@ -1,53 +1,58 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import '../PagesCSS/OrganizerLoginCSS.css'; // 确保路径正确
+import "../PagesCSS/OrganizerLoginCSS.css";
 
-const REST_API_URL = "https://localhost:7085/api/Login/login";
+// ===== 后端地址（云端域名，需替换成你的实际域名）=====
+// 本地调试就把下面改成 "https://localhost:7085"
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true, // ★ 必须：跨站携带/保存会话 Cookie
+});
 
 export default function LoginOrganizer() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [userType, setUserType] = useState(true)
-
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const navigate = useNavigate();
-    //const location = useLocation();
 
     async function handleLoginClick(e) {
         e.preventDefault();
-        console.log("login button is clicked");
         try {
             const data = {
-                "identifier": email,
-                "passwordHash": password,
+                identifier: email,
+                passwordHash: password, // 你后端现在按这个字段比对
             };
-            const response = await axios.post(REST_API_URL, data,{
-                withCredentials: true
-            });
 
-            if (response.status === 200) {
-                await checkLoginUserType()
+            // 登录：控制器通常是 [Route("api/[controller]")] → /api/Login/login
+            const res = await api.post("/api/Login/login", data);
+
+            if (res.status === 200) {
+                await checkLoginUserType();
             }
         } catch (error) {
+            console.error("Login failed:", error);
             alert("Login failed. Please check your credentials!");
-            console.error(error);
         }
     }
 
     async function checkLoginUserType() {
         try {
-            const response = await axios.get("https://localhost:7085/checkLoginUserType");
-            if (response.status === 200) {
-                if (response.data.userType === "organizer") {
+            // 用同一 axios 实例，自动带 cookie
+            const res = await api.get("/checkLoginUserType");
+            if (res.status === 200) {
+                if (res.data?.userType === "organizer") {
                     alert("Login successfully!");
                     navigate("/Dashboard");
-                }else{
-                    alert("Login UserType must be organizer!")
+                } else {
+                    alert("Login UserType must be organizer!");
                 }
             }
         } catch (error) {
             console.error("Failed to fetch user type:", error);
-            setUserType(false); // 默认设置为非管理员用户类型
+            alert("Failed to fetch user type");
         }
     }
 
@@ -82,7 +87,11 @@ export default function LoginOrganizer() {
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary w-100 mb-3" onClick={handleLoginClick}>
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-100 mb-3"
+                        onClick={handleLoginClick}
+                    >
                         Login
                     </button>
                 </form>
@@ -100,14 +109,16 @@ export default function LoginOrganizer() {
                     Continue with Google
                 </button>
 
-                <button className="btn btn-outline-primary w-100 mb-2"
-                        onClick={() => navigate('/OrganizerSignUp')}>
+                <button
+                    className="btn btn-outline-primary w-100 mb-2"
+                    onClick={() => navigate("/OrganizerSignUp")}
+                >
                     Sign Up
                 </button>
 
                 <p className="tos">
-                    By clicking the button above, you agree to our{' '}
-                    <a href="/terms">Terms of Service</a> and{' '}
+                    By clicking the button above, you agree to our{" "}
+                    <a href="/terms">Terms of Service</a> and{" "}
                     <a href="/privacy">Privacy Policy</a>
                 </p>
 

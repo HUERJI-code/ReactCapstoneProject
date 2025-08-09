@@ -1,7 +1,16 @@
 // ManageChannel.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/ManageChannelCSS.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/ManageChannelCSS.css";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const ManageChannel = () => {
     const [channels, setChannels] = useState([]);
@@ -23,34 +32,31 @@ const ManageChannel = () => {
 
     // Reset to first page whenever tag modal opens or tag list changes
     useEffect(() => {
-        if (showTagModal) {
-            setCurrentPage(1);
-        }
+        if (showTagModal) setCurrentPage(1);
     }, [showTagModal, allTags]);
 
     const fetchChannels = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/getOrganizerOwnedChannel');
-            setChannels(response.data);
+            const res = await api.get("/getOrganizerOwnedChannel");
+            setChannels(res.data || []);
         } catch (error) {
-            console.error("Failed to fetch channels:", error);
+            console.error("Failed to fetch channels:", error?.response || error);
+            alert("Failed to fetch channels.");
         }
     };
 
     const fetchAllTags = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Tag');
-            setAllTags(response.data);
+            const res = await api.get("/api/Tag");
+            setAllTags(res.data || []);
         } catch (error) {
-            console.error("Failed to fetch tags:", error);
+            console.error("Failed to fetch tags:", error?.response || error);
         }
     };
 
     const handleEditClick = (channel) => {
-        const tagIds = channel.tags ? channel.tags.map(tag => tag.tagId) : [];
-        setSelectedTags(
-            tagIds.map(id => allTags.find(t => t.tagId === id)).filter(Boolean)
-        );
+        const tagIds = channel.tags ? channel.tags.map((t) => t.tagId) : [];
+        setSelectedTags(tagIds.map((id) => allTags.find((t) => t.tagId === id)).filter(Boolean));
         setEditingChannel(channel);
         setShowEditModal(true);
     };
@@ -61,13 +67,13 @@ const ManageChannel = () => {
     };
 
     const handleTagSelect = (tag) => {
-        if (!selectedTags.some(t => t.tagId === tag.tagId)) {
+        if (!selectedTags.some((t) => t.tagId === tag.tagId)) {
             setSelectedTags([...selectedTags, tag]);
         }
     };
 
     const handleTagRemove = (tagId) => {
-        setSelectedTags(selectedTags.filter(tag => tag.tagId !== tagId));
+        setSelectedTags(selectedTags.filter((t) => t.tagId !== tagId));
     };
 
     const handleUpdateChannel = async () => {
@@ -78,15 +84,15 @@ const ManageChannel = () => {
                 name,
                 url,
                 description,
-                tagIds: selectedTags.map(tag => tag.tagId)
+                tagIds: selectedTags.map((t) => t.tagId),
             };
-            await axios.post('https://localhost:7085/updateChannel', channelToUpdate);
-            alert('Channel updated successfully!');
+            await api.post("/updateChannel", channelToUpdate);
+            alert("Channel updated successfully!");
             setShowEditModal(false);
             fetchChannels();
         } catch (error) {
-            console.error("Failed to update channel:", error);
-            alert('Failed to update channel. Please try again.');
+            console.error("Failed to update channel:", error?.response || error);
+            alert("Failed to update channel. Please try again.");
         }
     };
 
@@ -127,7 +133,7 @@ const ManageChannel = () => {
                     <div className="table-cell">Actions</div>
                 </div>
                 <div className="table-body">
-                    {channels.map(ch => (
+                    {channels.map((ch) => (
                         <div className="table-row" key={ch.id}>
                             <div className="table-cell">{ch.name}</div>
                             <div className="table-cell">{ch.url}</div>
@@ -188,7 +194,7 @@ const ManageChannel = () => {
                             <div className="tag-section">
                                 <label>Tags</label>
                                 <div className="tag-container">
-                                    {selectedTags.map(tag => (
+                                    {selectedTags.map((tag) => (
                                         <span key={tag.tagId} className="selected-tag">
                       {tag.name}
                                             <button
@@ -216,13 +222,11 @@ const ManageChannel = () => {
                                     <div className="tag-modal">
                                         <h3>Please select your channel tags</h3>
                                         <div className="tags-container">
-                                            {paginatedTags.map(tag => (
+                                            {paginatedTags.map((tag) => (
                                                 <div
                                                     key={tag.tagId}
                                                     className={`tag-item ${
-                                                        selectedTags.some(t => t.tagId === tag.tagId)
-                                                            ? 'selected'
-                                                            : ''
+                                                        selectedTags.some((t) => t.tagId === tag.tagId) ? "selected" : ""
                                                     }`}
                                                     onClick={() => handleTagSelect(tag)}
                                                 >
@@ -236,7 +240,7 @@ const ManageChannel = () => {
                                                 <button
                                                     type="button"
                                                     className="page-btn"
-                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                                     disabled={currentPage === 1}
                                                 >
                                                     ‹
@@ -247,7 +251,7 @@ const ManageChannel = () => {
                                                 <button
                                                     type="button"
                                                     className="page-btn"
-                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                                                     disabled={currentPage === totalPages}
                                                 >
                                                     ›
@@ -256,11 +260,7 @@ const ManageChannel = () => {
                                         )}
 
                                         <div className="modal-footer">
-                                            <button
-                                                type="button"
-                                                className="back-btn"
-                                                onClick={() => setShowTagModal(false)}
-                                            >
+                                            <button type="button" className="back-btn" onClick={() => setShowTagModal(false)}>
                                                 Back
                                             </button>
                                         </div>
@@ -270,18 +270,10 @@ const ManageChannel = () => {
 
                             {/* Form actions */}
                             <div className="form-actions">
-                                <button
-                                    type="button"
-                                    className="update-btn"
-                                    onClick={handleUpdateChannel}
-                                >
+                                <button type="button" className="update-btn" onClick={handleUpdateChannel}>
                                     Update Channel
                                 </button>
-                                <button
-                                    type="button"
-                                    className="cancel-btn"
-                                    onClick={handleCancelEdit}
-                                >
+                                <button type="button" className="cancel-btn" onClick={handleCancelEdit}>
                                     Cancel
                                 </button>
                             </div>

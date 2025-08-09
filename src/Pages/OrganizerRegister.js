@@ -1,59 +1,66 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import '../PagesCSS/OrganizerRegisterCSS.css'; // 确保路径正确
+import "../PagesCSS/OrganizerRegisterCSS.css";
 
-const REST_API_URL = "https://localhost:7085/api/User/CreateOrganizer";
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+// 建议用环境变量切换：REACT_APP_API_BASE_URL
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true, // 以后如果注册完要自动登录会有用，保留不影响
+});
 
 export default function OrganizerRegister() {
-    const [fullName, setFullName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [inviteCode, setInviteCode] = useState('');
+    const [fullName, setFullName] = useState("");
+    const [email, setEmail]         = useState("");
+    const [password, setPassword]   = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [inviteCode, setInviteCode] = useState("");
 
     const navigate = useNavigate();
 
     async function handleSignUpClick(e) {
         e.preventDefault();
-        console.log("sign up button is clicked");
         try {
             if (password !== confirmPassword) {
                 alert("Passwords do not match!");
                 return;
             }
-            if(inviteCode !== "123456") {
+            if (inviteCode !== "123456") {
                 alert("Invite Code do not match!");
                 return;
             }
 
             const data = {
-                "name": fullName,
-                "email": email,
-                "passwordHash": password,
-                "role": "123"
+                name: fullName,
+                email,
+                passwordHash: password,
+                role: "123", // 如果后端需要“organizer”等正式角色名，改这里
             };
-            const response = await axios.post(REST_API_URL, data);
 
-            if (response.status === 201) {
+            const res = await api.post("/api/User/CreateOrganizer", data);
+
+            if (res.status === 201) {
                 alert("Registration successful!");
-                navigate('/login/organizer'); // Redirect to login page after successful registration
-            } else if (response.status === 400) {
-                alert(response.data.message); // Display message for 400 status
+                // 按你的路由来：之前你有用 /OrganizerLogin，这里保持你的 '/login/organizer'
+                navigate("/");
+            } else if (res.status === 400) {
+                alert(res.data?.message || "Bad request.");
             } else {
                 alert("UserName or Mail already exist");
             }
         } catch (error) {
-            if (error.response) {
-                // 请求已发出，但服务器响应的状态码不在 2xx 范围内
+            // 统一错误处理
+            if (error?.response) {
                 alert(error.response.data || "UserName or EMail already exist");
-            } else if (error.request) {
-                // 请求已发出，但没有收到响应
-                console.error('No response', error.request);
+            } else if (error?.request) {
+                console.error("No response:", error.request);
                 alert("No response from server.");
             } else {
-                // 在设置请求时触发了错误
-                console.error('Error', error.message);
+                console.error("Error:", error.message);
                 alert("UserName or Mail already exist");
             }
             console.error(error);
@@ -127,7 +134,11 @@ export default function OrganizerRegister() {
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary w-100 mb-3" onClick={handleSignUpClick}>
+                    <button
+                        type="submit"
+                        className="btn btn-primary w-100 mb-3"
+                        onClick={handleSignUpClick}
+                    >
                         SignUp with UniSphere
                     </button>
                 </form>
@@ -146,8 +157,8 @@ export default function OrganizerRegister() {
                 </button>
 
                 <p className="tos">
-                By clicking the button above, you agree to our{' '}
-                    <a href="/terms">Terms of Service</a> and{' '}
+                    By clicking the button above, you agree to our{" "}
+                    <a href="/terms">Terms of Service</a> and{" "}
                     <a href="/privacy">Privacy Policy</a>
                 </p>
 
@@ -157,7 +168,8 @@ export default function OrganizerRegister() {
                     </a>
                 </div>
             </div>
-            <button className="login-button" onClick={() => navigate('/')}>
+
+            <button className="login-button" onClick={() => navigate("/")}>
                 Login
             </button>
         </div>

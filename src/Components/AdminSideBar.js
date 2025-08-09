@@ -1,7 +1,16 @@
-import React, {useEffect, useState} from 'react';
-import {Link, useLocation, useNavigate} from 'react-router-dom';
-import '../ComponentsCSS/SideBarCSS.css';
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../ComponentsCSS/SideBarCSS.css";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 export default function AdminSideBar() {
     const location = useLocation();
@@ -13,25 +22,26 @@ export default function AdminSideBar() {
 
     const fetchMessages = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/getLoginUserMessage');
-            setMessages(response.data);
-            const unreadCount = response.data.filter(message => message.isRead === false).length;
-            setUnreadMessages(unreadCount);
+            const res = await api.get("/getLoginUserMessage");
+            const list = res.data || [];
+            setMessages(list);
+            setUnreadMessages(list.filter((m) => m.isRead === false).length);
         } catch (err) {
-            console.error(err);
+            console.error("fetchMessages error:", err?.response || err);
+            // 未登录时可能 401，这里不弹窗
         }
     };
 
     const checkLoginStatus = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Login/check', {
-                withCredentials: true
-            });
-            if (response.status === 401) {
-                navigate("/adminLogin");
-            }
+            await api.get("/api/Login/check"); // 200 即已登录
         } catch (err) {
-            console.error(err);
+            const status = err?.response?.status;
+            if (status === 401) {
+                navigate("/adminLogin");
+                return;
+            }
+            console.error("checkLoginStatus error:", err?.response || err);
             alert("Not logged in");
             navigate("/adminLogin");
         }
@@ -40,6 +50,7 @@ export default function AdminSideBar() {
     useEffect(() => {
         checkLoginStatus();
         fetchMessages();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -51,73 +62,63 @@ export default function AdminSideBar() {
             </div>
 
             <div className="nav-items">
-                <Link to="/AdminDashboard" className={`nav-item ${isActive('/AdminDashboard') ? 'active' : ''}`}>
+                <Link to="/AdminDashboard" className={`nav-item ${isActive("/AdminDashboard") ? "active" : ""}`}>
                     <i className="nav-icon">📊</i>
                     <span className="nav-text">Dashboards</span>
                 </Link>
 
-                <Link to="/AdminInbox" className={`nav-item ${isActive('/AdminInbox') ? 'active' : ''}`}>
+                <Link to="/AdminInbox" className={`nav-item ${isActive("/AdminInbox") ? "active" : ""}`}>
                     <i className="nav-icon">✉️</i>
                     <span className="nav-text">Inbox</span>
                     <span className="icon-link">New: {unreadMessages}</span>
                 </Link>
 
-                <Link to="/ManageUserAccount" className={`nav-item ${isActive('/ManageUserAccount') ? 'active' : ''}`}>
+                <Link to="/ManageUserAccount" className={`nav-item ${isActive("/ManageUserAccount") ? "active" : ""}`}>
                     <i className="nav-icon">👤</i>
                     <span className="nav-text">Manage User account</span>
                 </Link>
             </div>
 
             <div className="channels-section">
-                <Link to="/AdminManageActivities" className={`nav-item ${isActive('/AdminManageActivities') ? 'active' : ''}`}>
+                <Link to="/AdminManageActivities" className={`nav-item ${isActive("/AdminManageActivities") ? "active" : ""}`}>
                     <i className="nav-icon">🎬</i>
                     <span className="nav-text">Manage Activities</span>
                 </Link>
 
-                <Link to="/AdminManageChannels" className={`nav-item ${isActive('/AdminManageChannels') ? 'active' : ''}`}>
+                <Link to="/AdminManageChannels" className={`nav-item ${isActive("/AdminManageChannels") ? "active" : ""}`}>
                     <i className="nav-icon">📺</i>
                     <span className="nav-text">Manage Channel</span>
                 </Link>
 
-                <Link to="/ManageTags" className={`nav-item ${isActive('/ManageTags') ? 'active' : ''}`}>
+                <Link to="/ManageTags" className={`nav-item ${isActive("/ManageTags") ? "active" : ""}`}>
                     <i className="nav-icon">🏷️</i>
                     <span className="nav-text">Tag Management</span>
                 </Link>
 
                 <Link
                     to="/AdminManageActivityRequests"
-                    className={`nav-item ${isActive('/AdminManageActivityRequests') ? 'active' : ''}`}
+                    className={`nav-item ${isActive("/AdminManageActivityRequests") ? "active" : ""}`}
                 >
                     <i className="nav-icon">📥</i>
                     <span className="nav-text">Manage Activity Requests</span>
                 </Link>
 
-                {/* 新增：Manage Channel Requests */}
                 <Link
                     to="/ManageChannelRequests"
-                    className={`nav-item ${isActive('/ManageChannelRequests') ? 'active' : ''}`}
+                    className={`nav-item ${isActive("/ManageChannelRequests") ? "active" : ""}`}
                 >
                     <i className="nav-icon">🚩</i>
                     <span className="nav-text">Manage Channel Requests</span>
                 </Link>
+
                 <Link
                     to="/ManageChannelCreateRequest"
-                    className={`nav-item ${isActive('/ManageChannelCreateRequest') ? 'active' : ''}`}
+                    className={`nav-item ${isActive("/ManageChannelCreateRequest") ? "active" : ""}`}
                 >
                     <i className="nav-icon">📝</i>
                     <span className="nav-text">Manage Channel Create Requests</span>
                 </Link>
-
             </div>
-
-            {/* 如需帮助菜单，按需恢复
-      <div className="help-section">
-        <Link to="/help" className={`help-item ${isActive('/help') ? 'active' : ''}`}>
-          <i className="help-icon">❓</i>
-          <span className="help-text">Help</span>
-        </Link>
-      </div>
-      */}
         </div>
     );
 }

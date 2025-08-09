@@ -1,7 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/InboxCSS.css';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "../ComponentsCSS/InboxCSS.css";
+import { useNavigate } from "react-router-dom";
+
+// ===== 后端地址（云端/本地切换）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 创建 axios 实例：自动拼接 baseURL + 带 Cookie
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const AdminInbox = () => {
     const [messages, setMessages] = useState([]);
@@ -14,18 +23,21 @@ const AdminInbox = () => {
     const fetchMessages = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('https://localhost:7085/getLoginUserMessage');
-            console.log(response.data);
-            setMessages(response.data.sort((a, b) => {
+            const res = await api.get("/getLoginUserMessage");
+            const sorted = res.data.sort((a, b) => {
                 if (a.isRead !== b.isRead) {
-                    return a.isRead - b.isRead; // 0 排在前面
+                    return a.isRead - b.isRead; // 未读在前
                 }
-                return b.id - a.id; // 同为 0 时按 id 降序排列
-            }));
+                return b.id - a.id; // 按 id 倒序
+            });
+            setMessages(sorted);
             setError(null);
         } catch (err) {
-            setError('Failed to fetch messages');
+            setError("Failed to fetch messages");
             console.error(err);
+            if (err?.response?.status === 401) {
+                navigate("/adminLogin");
+            }
         } finally {
             setLoading(false);
         }
@@ -33,30 +45,24 @@ const AdminInbox = () => {
 
     useEffect(() => {
         fetchMessages();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleMessageClick = (message) => {
-        // 创建一个新的消息数组，更新选定消息的 isRead 状态
-        const updatedMessages = messages.map(msg =>
+        // 更新本地状态为已读
+        const updated = messages.map((msg) =>
             msg.id === message.id ? { ...msg, isRead: true } : msg
         );
-        setMessages(updatedMessages);
-        const markAsRead = async () => {
-            try {
-                await axios.post(`https://localhost:7085/MarkAsRead/${message.id}`);
-                // 或者使用 params 参数传递
-                // await axios.get('https://localhost:7085/MarkAsRead', { params: { id: message.id } });
-            } catch (error) {
-                console.error("Failed to mark message as read:", error);
-            }
-        };
+        setMessages(updated);
 
-        markAsRead();
+        // 后端标记已读
+        api.post(`/MarkAsRead/${message.id}`).catch((err) => {
+            console.error("Failed to mark message as read:", err);
+        });
 
-        // 显示消息详情
+        // 显示详情
         setSelectedMessage(message);
         setShowDetails(true);
-
     };
 
     const closeDetails = () => {
@@ -75,9 +81,7 @@ const AdminInbox = () => {
                         className="message-card"
                         onClick={() => handleMessageClick(message)}
                     >
-                        {message.isRead === false && (
-                            <div className="unread-dot"></div>
-                        )}
+                        {message.isRead === false && <div className="unread-dot"></div>}
                         <div className="message-header">
                             <span className="messageId">{message.id}</span>
                             <span className="timestamp">{message.sentAt}</span>
@@ -91,16 +95,29 @@ const AdminInbox = () => {
             {/* 消息详情浮动框 */}
             {showDetails && selectedMessage && (
                 <div className="message-details-overlay" onClick={closeDetails}>
-                    <div className="message-details-card" onClick={(e) => e.stopPropagation()}>
+                    <div
+                        className="message-details-card"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="message-details-header">
                             <h3>Message Details</h3>
-                            <button className="close-button" onClick={closeDetails}>×</button>
+                            <button className="close-button" onClick={closeDetails}>
+                                ×
+                            </button>
                         </div>
                         <div className="message-details-content">
-                            <p><strong>ID:</strong> {selectedMessage.id}</p>
-                            <p><strong>Timestamp:</strong> {selectedMessage.sentAt}</p>
-                            <p><strong>Title:</strong> {selectedMessage.title}</p>
-                            <p><strong>Content:</strong> {selectedMessage.content}</p>
+                            <p>
+                                <strong>ID:</strong> {selectedMessage.id}
+                            </p>
+                            <p>
+                                <strong>Timestamp:</strong> {selectedMessage.sentAt}
+                            </p>
+                            <p>
+                                <strong>Title:</strong> {selectedMessage.title}
+                            </p>
+                            <p>
+                                <strong>Content:</strong> {selectedMessage.content}
+                            </p>
                         </div>
                     </div>
                 </div>

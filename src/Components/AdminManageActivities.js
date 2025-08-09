@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/AdminManageActivitiesCSS.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/AdminManageActivitiesCSS.css";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const AdminManageActivities = () => {
     const [activities, setActivities] = useState([]);
@@ -13,32 +22,33 @@ const AdminManageActivities = () => {
 
     const fetchActivities = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Activity');
-            setActivities(response.data);
+            const res = await api.get("/api/Activity");
+            setActivities(res.data || []);
         } catch (error) {
-            console.error("Failed to fetch activities:", error);
+            console.error("Failed to fetch activities:", error?.response || error);
+            alert("Failed to fetch activities.");
         }
     };
 
     const handleBanActivity = async (activityId) => {
         try {
-            await axios.put(`https://localhost:7085/banActivity?activityId=${activityId}`);
-            alert('Activity banned successfully!');
-            fetchActivities(); // Refresh activities list after ban
+            await api.put(`/banActivity`, null, { params: { activityId } });
+            alert("Activity banned successfully!");
+            fetchActivities();
         } catch (error) {
-            console.error("Failed to ban activity:", error);
-            alert('Failed to ban activity. Please try again.');
+            console.error("Failed to ban activity:", error?.response || error);
+            alert("Failed to ban activity. Please try again.");
         }
     };
 
     const handleUnbanActivity = async (activityId) => {
         try {
-            await axios.put(`https://localhost:7085/UnbanActivity?activityId=${activityId}`);
-            alert('Activity unbanned successfully!');
-            fetchActivities(); // Refresh activities list after unban
+            await api.put(`/UnbanActivity`, null, { params: { activityId } });
+            alert("Activity unbanned successfully!");
+            fetchActivities();
         } catch (error) {
-            console.error("Failed to unban activity:", error);
-            alert('Failed to unban activity. Please try again.');
+            console.error("Failed to unban activity:", error?.response || error);
+            alert("Failed to unban activity. Please try again.");
         }
     };
 
@@ -62,20 +72,20 @@ const AdminManageActivities = () => {
                 </tr>
                 </thead>
                 <tbody>
-                {activities.map(activity => (
+                {activities.map((activity) => (
                     <tr key={activity.activityId} onClick={() => handleRowClick(activity)}>
                         <td>{activity.activityId}</td>
                         <td>{activity.title}</td>
                         <td>{activity.location}</td>
-                        <td>{activity.startTime.split(' ')[0]}</td>
+                        <td>{(activity.startTime || "").split(" ")[0]}</td>
                         <td>{activity.status}</td>
                         <td>
-                            {activity.status !== 'banned' ? (
+                            {activity.status !== "banned" ? (
                                 <button
                                     className="ban-button"
                                     onClick={(e) => {
-                                        handleBanActivity(activity.activityId);
                                         e.stopPropagation();
+                                        handleBanActivity(activity.activityId);
                                     }}
                                 >
                                     Ban
@@ -84,8 +94,8 @@ const AdminManageActivities = () => {
                                 <button
                                     className="unban-button"
                                     onClick={(e) => {
-                                        handleUnbanActivity(activity.activityId);
                                         e.stopPropagation();
+                                        handleUnbanActivity(activity.activityId);
                                     }}
                                 >
                                     Unban
@@ -101,12 +111,24 @@ const AdminManageActivities = () => {
                 <div className="details-modal-overlay">
                     <div className="details-modal">
                         <h3>{selectedActivity.title}</h3>
-                        <p><strong>Location:</strong> {selectedActivity.location}</p>
-                        <p><strong>Date:</strong> {selectedActivity.startTime.split(' ')[0]}</p>
-                        <p><strong>Description:</strong> {selectedActivity.description}</p>
-                        <p><strong>StartTime:</strong>{selectedActivity.startTime}</p>
-                        <p><strong>EndTime:</strong>{selectedActivity.endTime}</p>
-                        <p><strong>Status:</strong> {selectedActivity.status}</p>
+                        <p>
+                            <strong>Location:</strong> {selectedActivity.location}
+                        </p>
+                        <p>
+                            <strong>Date:</strong> {(selectedActivity.startTime || "").split(" ")[0]}
+                        </p>
+                        <p>
+                            <strong>Description:</strong> {selectedActivity.description}
+                        </p>
+                        <p>
+                            <strong>StartTime:</strong> {selectedActivity.startTime}
+                        </p>
+                        <p>
+                            <strong>EndTime:</strong> {selectedActivity.endTime}
+                        </p>
+                        <p>
+                            <strong>Status:</strong> {selectedActivity.status}
+                        </p>
                         <button onClick={() => setShowDetailsModal(false)}>Close</button>
                     </div>
                 </div>

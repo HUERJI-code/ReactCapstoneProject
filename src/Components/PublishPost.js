@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/PublishPostCSS.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/PublishPostCSS.css";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const PublishPost = () => {
     const [channels, setChannels] = useState([]);
     const [showPublishModal, setShowPublishModal] = useState(false);
-    const [postTitle, setPostTitle] = useState('');
-    const [postContent, setPostContent] = useState('');
+    const [postTitle, setPostTitle] = useState("");
+    const [postContent, setPostContent] = useState("");
     const [isPinned, setIsPinned] = useState(false);
-    const [isVisible, setIsVisible] = useState(true); // 默认为可见
+    const [isVisible, setIsVisible] = useState(true);
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -18,11 +27,11 @@ const PublishPost = () => {
 
     const fetchChannels = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/getOrganizerOwnedChannel');
-            const approvedChannels = response.data.filter(channel => channel.status === 'approved');
-            setChannels(approvedChannels);
+            const res = await api.get("/getOrganizerOwnedChannel");
+            const approved = (res.data || []).filter((c) => c.status === "approved");
+            setChannels(approved);
         } catch (error) {
-            console.error("Failed to fetch channels:", error);
+            console.error("Failed to fetch channels:", error?.response || error);
         }
     };
 
@@ -33,44 +42,44 @@ const PublishPost = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'title') {
-            setPostTitle(value);
-        } else if (name === 'content') {
-            setPostContent(value);
-        }
+        if (name === "title") setPostTitle(value);
+        if (name === "content") setPostContent(value);
     };
 
     const handleCheckboxChange = (e) => {
         const { name, checked } = e.target;
-        if (name === 'isPinned') {
-            setIsPinned(checked);
-        } else if (name === 'isVisible') {
-            setIsVisible(checked);
-        }
+        if (name === "isPinned") setIsPinned(checked);
+        if (name === "isVisible") setIsVisible(checked);
     };
 
     const handlePublishPost = async () => {
+        if (!selectedChannel) return;
         try {
             setIsSubmitting(true);
+            const channelId = selectedChannel.channelId ?? selectedChannel.id;
+
             const postToPublish = {
                 title: postTitle,
                 content: postContent,
-                postedAt: "abc", // 固定值
-                isPinned: isPinned,
-                isVisible: isVisible,
-                channelId: selectedChannel.channelId // 假设频道有id
+                isPinned,
+                isVisible,
+                channelId,
+                // postedAt 让后端写入，别手动填奇怪值
             };
-            await axios.post('https://localhost:7085/api/channel/channels/messages', postToPublish);
-            alert('Post published successfully!');
+
+            await api.post("/api/channel/channels/messages", postToPublish);
+            alert("Post published successfully!");
             setShowPublishModal(false);
-            // 重置表单
-            setPostTitle('');
-            setPostContent('');
+
+            // reset
+            setPostTitle("");
+            setPostContent("");
             setIsPinned(false);
             setIsVisible(true);
+            setSelectedChannel(null);
         } catch (error) {
-            console.error("Failed to publish post:", error);
-            alert('Failed to publish post. Channel status isn\'t approved.');
+            console.error("Failed to publish post:", error?.response || error);
+            alert("Failed to publish post. Channel status isn't approved or session expired.");
         } finally {
             setIsSubmitting(false);
         }
@@ -78,9 +87,8 @@ const PublishPost = () => {
 
     const handleCancelPublish = () => {
         setShowPublishModal(false);
-        // 重置表单
-        setPostTitle('');
-        setPostContent('');
+        setPostTitle("");
+        setPostContent("");
         setIsPinned(false);
         setIsVisible(true);
         setSelectedChannel(null);
@@ -110,15 +118,12 @@ const PublishPost = () => {
                     <div className="table-cell">Actions</div>
                 </div>
                 <div className="table-body">
-                    {channels.map(channel => (
-                        <div className="table-row" key={channel.id}>
+                    {channels.map((channel) => (
+                        <div className="table-row" key={channel.id ?? channel.channelId}>
                             <div className="table-cell">{channel.name}</div>
                             <div className="table-cell">{channel.description}</div>
                             <div className="table-cell">
-                                <button
-                                    className="edit-btn"
-                                    onClick={() => handlePublishClick(channel)}
-                                >
+                                <button className="edit-btn" onClick={() => handlePublishClick(channel)}>
                                     Publish
                                 </button>
                             </div>
@@ -186,13 +191,9 @@ const PublishPost = () => {
                                     onClick={handlePublishPost}
                                     disabled={isSubmitting}
                                 >
-                                    {isSubmitting ? 'Publishing...' : 'Publish Post'}
+                                    {isSubmitting ? "Publishing..." : "Publish Post"}
                                 </button>
-                                <button
-                                    type="button"
-                                    className="cancel-btn"
-                                    onClick={handleCancelPublish}
-                                >
+                                <button type="button" className="cancel-btn" onClick={handleCancelPublish}>
                                     Cancel
                                 </button>
                             </div>

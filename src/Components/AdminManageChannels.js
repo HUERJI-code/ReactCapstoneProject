@@ -1,17 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/AdminManageChannelsCSS.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/AdminManageChannelsCSS.css";
+
+// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const AdminManageChannels = () => {
     const [channels, setChannels] = useState([]);
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-    // 新增：消息弹窗相关
+    // 消息弹窗相关
     const [showMessagesModal, setShowMessagesModal] = useState(false);
     const [messages, setMessages] = useState([]);
     const [messagesLoading, setMessagesLoading] = useState(false);
-    const [messagesError, setMessagesError] = useState('');
+    const [messagesError, setMessagesError] = useState("");
 
     useEffect(() => {
         fetchChannels();
@@ -19,32 +28,33 @@ const AdminManageChannels = () => {
 
     const fetchChannels = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/channel/channels/getAll');
-            setChannels(response.data);
+            const res = await api.get("/api/channel/channels/getAll");
+            setChannels(res.data || []);
         } catch (error) {
-            console.error('Failed to fetch channels:', error);
+            console.error("Failed to fetch channels:", error?.response || error);
+            alert("Failed to fetch channels.");
         }
     };
 
     const handleBanChannel = async (channelId) => {
         try {
-            await axios.put(`https://localhost:7085/banChannel?channelId=${channelId}`);
-            alert('Channel banned successfully!');
-            fetchChannels(); // Refresh channels list after ban
+            await api.put("/banChannel", null, { params: { channelId } });
+            alert("Channel banned successfully!");
+            fetchChannels();
         } catch (error) {
-            console.error('Failed to ban channel:', error);
-            alert('Failed to ban channel. Please try again.');
+            console.error("Failed to ban channel:", error?.response || error);
+            alert("Failed to ban channel. Please try again.");
         }
     };
 
     const handleUnbanChannel = async (channelId) => {
         try {
-            await axios.put(`https://localhost:7085/unbanChannel?channelId=${channelId}`);
-            alert('Channel unbanned successfully!');
-            fetchChannels(); // Refresh channels list after unban
+            await api.put("/unbanChannel", null, { params: { channelId } });
+            alert("Channel unbanned successfully!");
+            fetchChannels();
         } catch (error) {
-            console.error('Failed to unban channel:', error);
-            alert('Failed to unban channel. Please try again.');
+            console.error("Failed to unban channel:", error?.response || error);
+            alert("Failed to unban channel. Please try again.");
         }
     };
 
@@ -53,25 +63,25 @@ const AdminManageChannels = () => {
         setShowDetailsModal(true);
     };
 
-    // 新增：获取选中频道的消息
+    // 获取选中频道的消息
     const fetchChannelMessages = async (channelId) => {
         setMessages([]);
-        setMessagesError('');
+        setMessagesError("");
         setMessagesLoading(true);
         try {
-            const res = await axios.get(
-                `https://localhost:7085/api/channel/channels/getChannelMessages?channelId=${channelId}`
-            );
+            const res = await api.get("/api/channel/channels/getChannelMessages", {
+                params: { channelId },
+            });
             setMessages(res.data || []);
         } catch (err) {
-            console.error('Failed to fetch channel messages:', err);
-            setMessagesError('Failed to fetch channel messages. Please try again.');
+            console.error("Failed to fetch channel messages:", err?.response || err);
+            setMessagesError("Failed to fetch channel messages. Please try again.");
         } finally {
             setMessagesLoading(false);
         }
     };
 
-    // 新增：点击“View Channel Messages”
+    // 点击 “View Channel Messages”
     const handleViewMessages = async () => {
         if (!selectedChannel) return;
         setShowMessagesModal(true);
@@ -99,7 +109,7 @@ const AdminManageChannels = () => {
                         <td>{channel.description}</td>
                         <td>{channel.status}</td>
                         <td>
-                            {channel.status !== 'banned' ? (
+                            {channel.status !== "banned" ? (
                                 <button
                                     className="ban-button"
                                     onClick={(e) => {
@@ -128,11 +138,17 @@ const AdminManageChannels = () => {
 
             {/* 详情弹窗 */}
             {showDetailsModal && selectedChannel && (
-                <div className="details-modal-overlay" onClick={() => setShowDetailsModal(false)}>
+                <div
+                    className="details-modal-overlay"
+                    onClick={() => setShowDetailsModal(false)}
+                >
                     <div className="details-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="details-modal-header">
                             <h3>{selectedChannel.name}</h3>
-                            <button className="close-btn" onClick={() => setShowDetailsModal(false)}>
+                            <button
+                                className="close-btn"
+                                onClick={() => setShowDetailsModal(false)}
+                            >
                                 &times;
                             </button>
                         </div>
@@ -155,19 +171,28 @@ const AdminManageChannels = () => {
 
             {/* 消息列表弹窗 */}
             {showMessagesModal && selectedChannel && (
-                <div className="messages-modal-overlay" onClick={() => setShowMessagesModal(false)}>
+                <div
+                    className="messages-modal-overlay"
+                    onClick={() => setShowMessagesModal(false)}
+                >
                     <div className="messages-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>
-                                Messages - Channel: {selectedChannel.name} (ID: {selectedChannel.channelId})
+                                Messages - Channel: {selectedChannel.name} (ID:{" "}
+                                {selectedChannel.channelId})
                             </h3>
-                            <button className="close-btn" onClick={() => setShowMessagesModal(false)}>
+                            <button
+                                className="close-btn"
+                                onClick={() => setShowMessagesModal(false)}
+                            >
                                 &times;
                             </button>
                         </div>
 
                         <div className="messages-content">
-                            {messagesLoading && <div className="loading">Loading messages...</div>}
+                            {messagesLoading && (
+                                <div className="loading">Loading messages...</div>
+                            )}
                             {messagesError && <div className="error-text">{messagesError}</div>}
                             {!messagesLoading && !messagesError && messages.length === 0 && (
                                 <div className="empty-text">No messages found.</div>
@@ -186,7 +211,8 @@ const AdminManageChannels = () => {
                                                 <strong>Posted At:</strong> {message.postedAt}
                                             </p>
                                             <p>
-                                                <strong>Status:</strong> {message.isVisible ? 'Visible' : 'Hidden'}
+                                                <strong>Status:</strong>{" "}
+                                                {message.isVisible ? "Visible" : "Hidden"}
                                             </p>
                                             <hr />
                                         </div>

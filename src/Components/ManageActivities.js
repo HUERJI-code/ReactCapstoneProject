@@ -1,7 +1,16 @@
 // ManageActivities.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import '../ComponentsCSS/ManageActivitiesCSS.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "../ComponentsCSS/ManageActivitiesCSS.css";
+
+// ===== 后端地址（云端域名，按需改成本地 https://localhost:7085）=====
+const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
+
+// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
+const api = axios.create({
+    baseURL: API_BASE_URL,
+    withCredentials: true,
+});
 
 const ManageActivities = () => {
     const [activities, setActivities] = useState([]);
@@ -23,15 +32,14 @@ const ManageActivities = () => {
 
     // Reset to first page when opening the tag modal or when tags change
     useEffect(() => {
-        if (showTagModal) {
-            setCurrentPage(1);
-        }
+        if (showTagModal) setCurrentPage(1);
     }, [showTagModal, allTags]);
 
     const fetchActivities = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/getLoginOrganizerActivities');
-            setActivities(response.data);
+            // 注意：这里保持你原来的后端路径。如果你的控制器都有前缀 /api/xxx，请改成对应的路径
+            const res = await api.get("/getLoginOrganizerActivities");
+            setActivities(res.data || []);
         } catch (error) {
             console.error("Failed to fetch activities:", error);
         }
@@ -39,68 +47,60 @@ const ManageActivities = () => {
 
     const fetchAllTags = async () => {
         try {
-            const response = await axios.get('https://localhost:7085/api/Tag');
-            setAllTags(response.data);
+            const res = await api.get("/api/Tag");
+            setAllTags(res.data || []);
         } catch (error) {
             console.error("Failed to fetch tags:", error);
         }
     };
 
     const handleEditClick = (activity) => {
-        const tagIds = activity.tags ? activity.tags.map(tag => tag.tagId) : [];
+        const tagIds = activity.tags ? activity.tags.map((t) => t.tagId) : [];
         setSelectedTags(
-            tagIds.map(id => allTags.find(tag => tag.tagId === id)).filter(Boolean)
+            tagIds.map((id) => allTags.find((t) => t.tagId === id)).filter(Boolean)
         );
-        // clone to avoid direct state mutation
-        setEditingActivity({ ...activity });
+        setEditingActivity({ ...activity }); // clone
         setShowEditModal(true);
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        if (name === 'startTime' || name === 'endTime') {
+
+        if (name === "startTime" || name === "endTime") {
             // from "YYYY-MM-DDTHH:mm" to "YYYY/MM/DD HH:mm"
-            const formatted = value
-                ? value.replace('T', ' ').replace(/-/g, '/')
-                : '';
-            setEditingActivity({
-                ...editingActivity,
-                [name]: formatted
-            });
+            const formatted = value ? value.replace("T", " ").replace(/-/g, "/") : "";
+            setEditingActivity((prev) => ({ ...prev, [name]: formatted }));
         } else {
-            setEditingActivity({
-                ...editingActivity,
-                [name]: value
-            });
+            setEditingActivity((prev) => ({ ...prev, [name]: value }));
         }
     };
 
     const handleTagSelect = (tag) => {
-        if (!selectedTags.some(t => t.tagId === tag.tagId)) {
+        if (!selectedTags.some((t) => t.tagId === tag.tagId)) {
             setSelectedTags([...selectedTags, tag]);
         }
     };
 
     const handleTagRemove = (tagId) => {
-        setSelectedTags(selectedTags.filter(tag => tag.tagId !== tagId));
+        setSelectedTags(selectedTags.filter((t) => t.tagId !== tagId));
     };
 
     const handleUpdateActivity = async () => {
         try {
             const activityToUpdate = {
                 ...editingActivity,
-                tagIds: selectedTags.map(tag => tag.tagId)
+                tagIds: selectedTags.map((t) => t.tagId),
             };
-            await axios.put(
-                `https://localhost:7085/api/Activity/update/${editingActivity.activityId}`,
+            await api.put(
+                `/api/Activity/update/${editingActivity.activityId}`,
                 activityToUpdate
             );
-            alert('Activity updated successfully!');
+            alert("Activity updated successfully!");
             setShowEditModal(false);
             fetchActivities();
         } catch (error) {
             console.error("Failed to update activity:", error);
-            alert('Failed to update activity. Please try again.');
+            alert("Failed to update activity. Please try again.");
         }
     };
 
@@ -141,11 +141,13 @@ const ManageActivities = () => {
                     <div className="table-cell">Actions</div>
                 </div>
                 <div className="table-body">
-                    {activities.map(activity => (
+                    {activities.map((activity) => (
                         <div className="table-row" key={activity.activityId}>
                             <div className="table-cell">{activity.title}</div>
                             <div className="table-cell">{activity.location}</div>
-                            <div className="table-cell">{activity.startTime.split(' ')[0]}</div>
+                            <div className="table-cell">
+                                {(activity.startTime || "").split(" ")[0]}
+                            </div>
                             <div className="table-cell">{activity.status}</div>
                             <div className="table-cell">
                                 <button
@@ -172,7 +174,7 @@ const ManageActivities = () => {
                                 <input
                                     type="text"
                                     name="title"
-                                    value={editingActivity.title}
+                                    value={editingActivity.title || ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -183,7 +185,7 @@ const ManageActivities = () => {
                                 <label>Description</label>
                                 <textarea
                                     name="description"
-                                    value={editingActivity.description}
+                                    value={editingActivity.description || ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -195,7 +197,7 @@ const ManageActivities = () => {
                                 <input
                                     type="text"
                                     name="location"
-                                    value={editingActivity.location}
+                                    value={editingActivity.location || ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -207,15 +209,13 @@ const ManageActivities = () => {
                                 <input
                                     type="datetime-local"
                                     name="startTime"
-                                    value={
-                                        (() => {
-                                            const val = editingActivity.startTime || '';
-                                            const [date, time] = val.split(' ');
-                                            return date && time
-                                                ? `${date.replace(/\//g, '-')}T${time}`
-                                                : '';
-                                        })()
-                                    }
+                                    value={(() => {
+                                        const val = editingActivity.startTime || "";
+                                        const [date, time] = val.split(" ");
+                                        return date && time
+                                            ? `${date.replace(/\//g, "-")}T${time}`
+                                            : "";
+                                    })()}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -227,15 +227,13 @@ const ManageActivities = () => {
                                 <input
                                     type="datetime-local"
                                     name="endTime"
-                                    value={
-                                        (() => {
-                                            const val = editingActivity.endTime || '';
-                                            const [date, time] = val.split(' ');
-                                            return date && time
-                                                ? `${date.replace(/\//g, '-')}T${time}`
-                                                : '';
-                                        })()
-                                    }
+                                    value={(() => {
+                                        const val = editingActivity.endTime || "";
+                                        const [date, time] = val.split(" ");
+                                        return date && time
+                                            ? `${date.replace(/\//g, "-")}T${time}`
+                                            : "";
+                                    })()}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -247,7 +245,7 @@ const ManageActivities = () => {
                                 <input
                                     type="number"
                                     name="number"
-                                    value={editingActivity.number}
+                                    value={editingActivity.number ?? ""}
                                     onChange={handleInputChange}
                                     required
                                 />
@@ -259,7 +257,7 @@ const ManageActivities = () => {
                                 <input
                                     type="url"
                                     name="url"
-                                    value={editingActivity.url}
+                                    value={editingActivity.url || ""}
                                     onChange={handleInputChange}
                                 />
                             </div>
@@ -268,7 +266,7 @@ const ManageActivities = () => {
                             <div className="tag-section">
                                 <label>Tags</label>
                                 <div className="tag-container">
-                                    {selectedTags.map(tag => (
+                                    {selectedTags.map((tag) => (
                                         <span key={tag.tagId} className="selected-tag">
                       {tag.name}
                                             <button
@@ -296,11 +294,13 @@ const ManageActivities = () => {
                                     <div className="tag-modal">
                                         <h3>Please select your activity tags</h3>
                                         <div className="tags-container">
-                                            {paginatedTags.map(tag => (
+                                            {paginatedTags.map((tag) => (
                                                 <div
                                                     key={tag.tagId}
                                                     className={`tag-item ${
-                                                        selectedTags.some(t => t.tagId === tag.tagId) ? 'selected' : ''
+                                                        selectedTags.some((t) => t.tagId === tag.tagId)
+                                                            ? "selected"
+                                                            : ""
                                                     }`}
                                                     onClick={() => handleTagSelect(tag)}
                                                 >
@@ -314,7 +314,7 @@ const ManageActivities = () => {
                                                 <button
                                                     type="button"
                                                     className="page-btn"
-                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                                     disabled={currentPage === 1}
                                                 >
                                                     ‹
@@ -325,7 +325,7 @@ const ManageActivities = () => {
                                                 <button
                                                     type="button"
                                                     className="page-btn"
-                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                                                     disabled={currentPage === totalPages}
                                                 >
                                                     ›
