@@ -38,7 +38,6 @@ const ManageChannelCreateRequest = () => {
             });
 
             setRequests(data);
-            // console.log(data);
         } catch (e) {
             console.error("Failed to fetch channel create requests:", e?.response || e);
             setErr("Failed to fetch channel create requests.");
@@ -67,57 +66,66 @@ const ManageChannelCreateRequest = () => {
         (r) => (r.status || "").toLowerCase() === "pending"
     );
 
+    // ===== 空状态：加载完成且无待审核 → 标题 + 提示（居中） =====
+    if (!loading && !err && pending.length === 0) {
+        return (
+            <div className="manage-channel-create-requests-container">
+                <h2 style={{ textAlign: "center" }}>Manage Channel Create Requests</h2>
+                <p className="no-data">no pending requests</p>
+            </div>
+        );
+    }
+
     return (
         <div className="manage-channel-create-requests-container">
             <h2>Manage Channel Create Requests</h2>
 
             {loading && <div className="banner info">Loading...</div>}
             {err && <div className="banner error">{err}</div>}
-            {!loading && !err && pending.length === 0 && (
-                <div className="banner empty">No pending requests.</div>
-            )}
 
-            <table className="requests-table">
-                <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Channel Name</th>
-                    <th>Description</th>
-                    <th>Requested By</th>
-                    <th>Requested At</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {pending.map((r) => (
-                    <tr key={r.id}>
-                        <td>{r.id}</td>
-                        <td className="limit-text" title={r.channel?.name}>
-                            {r.channel?.name || "—"}
-                        </td>
-                        <td className="limit-text" title={r.channel?.description}>
-                            {r.channel?.description || "—"}
-                        </td>
-                        <td>{r.user?.name ?? "—"}</td>
-                        <td>{(r.requestedAt || "").split("T")[0]}</td>
-                        <td className="actions-cell">
-                            <button
-                                className="approve-btn"
-                                onClick={() => handleReview(r.id, "approved")}
-                            >
-                                Approve
-                            </button>
-                            <button
-                                className="reject-btn"
-                                onClick={() => handleReview(r.id, "rejected")}
-                            >
-                                Reject
-                            </button>
-                        </td>
+            {!loading && !err && (
+                <table className="requests-table">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Channel Name</th>
+                        <th>Description</th>
+                        <th>Requested By</th>
+                        <th>Requested At</th>
+                        <th>Actions</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {pending.map((r) => (
+                        <tr key={r.id}>
+                            <td>{r.id}</td>
+                            <td className="limit-text" title={r.channel?.name}>
+                                {r.channel?.name || "—"}
+                            </td>
+                            <td className="limit-text" title={r.channel?.description}>
+                                {r.channel?.description || "—"}
+                            </td>
+                            <td>{r.user?.name ?? "—"}</td>
+                            <td>{(r.requestedAt || "").split("T")[0]}</td>
+                            <td className="actions-cell">
+                                <button
+                                    className="approve-btn"
+                                    onClick={() => handleReview(r.id, "approved")}
+                                >
+                                    Approve
+                                </button>
+                                <button
+                                    className="reject-btn"
+                                    onClick={() => handleReview(r.id, "rejected")}
+                                >
+                                    Reject
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            )}
         </div>
     );
 };

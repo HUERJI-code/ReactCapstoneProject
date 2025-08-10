@@ -78,57 +78,66 @@ const ManageChannelRequests = () => {
         (r) => r.status !== "approved" && r.status !== "rejected"
     );
 
+    // ===== 空状态：加载完成且没有待审核报告 → 仅显示标题 + 提示（居中） =====
+    if (!loading && !err && pendingReports.length === 0) {
+        return (
+            <div className="manage-channel-requests-container">
+                <h2 style={{}}>Manage Channel Reports</h2>
+                <p className="no-data">no pending reports</p>
+            </div>
+        );
+    }
+
     return (
         <div className="manage-channel-requests-container">
             <h2>Manage Channel Reports</h2>
 
             {loading && <div className="banner info">Loading...</div>}
             {err && <div className="banner error">{err}</div>}
-            {!loading && !err && pendingReports.length === 0 && (
-                <div className="banner empty">No pending reports.</div>
-            )}
 
-            <table className="requests-table">
-                <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Channel Id</th>
-                    <th>Reported By</th>
-                    <th>Status</th>
-                    <th>Reviewed At</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {pendingReports.map((r) => (
-                    <tr
-                        key={r.id}
-                        onClick={() => handleRowClick(r)}
-                        className="clickable-row"
-                    >
-                        <td>{r.id}</td>
-                        <td>{r.channelId}</td>
-                        <td>{r.reportedById ?? "—"}</td>
-                        <td>{r.status}</td>
-                        <td>{fmtDate(r.reviewedAt)}</td>
-                        <td className="actions-cell">
-                            <button
-                                className="approve-btn"
-                                onClick={(e) => handleReview(r.id, "approved", e)}
-                            >
-                                Approve
-                            </button>
-                            <button
-                                className="reject-btn"
-                                onClick={(e) => handleReview(r.id, "rejected", e)}
-                            >
-                                Reject
-                            </button>
-                        </td>
+            {!loading && !err && (
+                <table className="requests-table">
+                    <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Channel Id</th>
+                        <th>Reported By</th>
+                        <th>Status</th>
+                        <th>Reviewed At</th>
+                        <th>Actions</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {pendingReports.map((r) => (
+                        <tr
+                            key={r.id}
+                            onClick={() => handleRowClick(r)}
+                            className="clickable-row"
+                        >
+                            <td>{r.id}</td>
+                            <td>{r.channelId}</td>
+                            <td>{r.reportedById ?? "—"}</td>
+                            <td>{r.status}</td>
+                            <td>{fmtDate(r.reviewedAt)}</td>
+                            <td className="actions-cell">
+                                <button
+                                    className="approve-btn"
+                                    onClick={(e) => handleReview(r.id, "approved", e)}
+                                >
+                                    Approve
+                                </button>
+                                <button
+                                    className="reject-btn"
+                                    onClick={(e) => handleReview(r.id, "rejected", e)}
+                                >
+                                    Reject
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            )}
 
             {/* 详情弹窗 */}
             {showDetailsModal && selectedReport && (
