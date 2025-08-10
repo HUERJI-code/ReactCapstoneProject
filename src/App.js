@@ -25,6 +25,7 @@ import ManageActivityRequests from "./Components/ManageActivityRequests";
 import ReviewReportedChannel from "./Components/ReviewReportedChannel";
 import ManageChannelRequests from "./Components/ManageChannelRequests";
 import ManageChannelCreateRequest from "./Components/ManageChannelCreateRequest";
+import AdminInviteCodes from "./Components/AdminInviteCodes";
 
 const App = () => {
   return (
@@ -80,6 +81,7 @@ const MainApp = () => {
                     <Route path="/ReviewReportedChannel" element={<ReviewReportedChannel/>}/>
                     <Route path="/ManageChannelRequests" element={<ManageChannelRequests />}/>
                     <Route path="/ManageChannelCreateRequest" element={<ManageChannelCreateRequest/>}/>
+                    <Route path="/AdminInviteCodes" element={<AdminInviteCodes />}/>
               </Route>
             </Routes>
         </main>

@@ -3,20 +3,20 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../PagesCSS/OrganizerRegisterCSS.css";
 
-// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
-// 建议用环境变量切换：REACT_APP_API_BASE_URL
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "https://adproject-webapp.azurewebsites.net";
+// ===== 后端地址 =====
+const API_BASE_URL =
+    process.env.REACT_APP_API_BASE_URL ||
+    "https://adproject-webapp.azurewebsites.net";
 
-// 统一 axios 实例
 const api = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true, // 以后如果注册完要自动登录会有用，保留不影响
+    withCredentials: true,
 });
 
 export default function OrganizerRegister() {
     const [fullName, setFullName] = useState("");
-    const [email, setEmail]         = useState("");
-    const [password, setPassword]   = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [inviteCode, setInviteCode] = useState("");
 
@@ -24,44 +24,60 @@ export default function OrganizerRegister() {
 
     async function handleSignUpClick(e) {
         e.preventDefault();
+
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+        if (!inviteCode.trim()) {
+            alert("Please enter invite code.");
+            return;
+        }
+
         try {
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                return;
-            }
-            if (inviteCode !== "123456") {
-                alert("Invite Code do not match!");
+            // 1) 调用后端使用邀请码
+            const inviteRes = await api.get(`/api/Login/useInviteCode`, {
+                params: { code: inviteCode.trim() },
+                responseType: "text",
+                transformResponse: [(data) => data],
+                validateStatus: () => true, // 不让 axios 自动抛错，自己判断状态码
+            });
+
+            if (inviteRes.status !== 200) {
+                // 邀码失败
+                const errMsg =
+                    typeof inviteRes.data === "string"
+                        ? inviteRes.data
+                        : "Invite code invalid";
+                alert(errMsg);
                 return;
             }
 
+            // 2) 成功则调用注册接口
             const data = {
                 name: fullName,
                 email,
                 passwordHash: password,
-                role: "123", // 如果后端需要“organizer”等正式角色名，改这里
+                role: "123",
             };
 
             const res = await api.post("/api/User/CreateOrganizer", data);
 
             if (res.status === 201) {
                 alert("Registration successful!");
-                // 按你的路由来：之前你有用 /OrganizerLogin，这里保持你的 '/login/organizer'
                 navigate("/");
-            } else if (res.status === 400) {
-                alert(res.data?.message || "Bad request.");
             } else {
-                alert("UserName or Mail already exist");
+                alert(res.data?.message || "Registration failed.");
             }
         } catch (error) {
-            // 统一错误处理
             if (error?.response) {
-                alert(error.response.data || "UserName or EMail already exist");
-            } else if (error?.request) {
-                console.error("No response:", error.request);
-                alert("No response from server.");
+                const msg =
+                    typeof error.response.data === "string"
+                        ? error.response.data
+                        : error.response.data?.message || "Request failed.";
+                alert(msg);
             } else {
-                console.error("Error:", error.message);
-                alert("UserName or Mail already exist");
+                alert("Network error.");
             }
             console.error(error);
         }

@@ -60,12 +60,12 @@ export default function AdminSideBar() {
     return (
         <div className="sidebar">
             <div className="logo-container">
-        <span className="logo-icon">
-          {username ? username.charAt(0).toUpperCase() : "?"}
-        </span>
+                <span className="logo-icon">
+                    {username ? username.charAt(0).toUpperCase() : "?"}
+                </span>
                 <span className="logo-text">
-          {username || "Loading..."}
-        </span>
+                    {username || "Loading..."}
+                </span>
                 <span className="logo-dropdown">▼</span>
             </div>
 
@@ -126,6 +126,16 @@ export default function AdminSideBar() {
                     <i className="nav-icon">📝</i>
                     <span className="nav-text">Manage Channel Create Requests</span>
                 </Link>
+
+                {/* >>> 新增：生成邀请码 <<< */}
+                <Link
+                    to="/AdminInviteCodes"
+                    className={`nav-item ${isActive("/AdminInviteCodes") ? "active" : ""}`}
+                >
+                    <i className="nav-icon">🔑</i>
+                    <span className="nav-text">Generate Invite Codes</span>
+                </Link>
+                {/* <<< 新增结束 */}
             </div>
         </div>
     );
