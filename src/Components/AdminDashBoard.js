@@ -90,7 +90,7 @@ export default function AdminDashboard() {
                                 <div className="header-cell">Date</div>
                                 <div className="header-cell">Organizer</div>
                                 <div className="header-cell">Status</div>
-                                <div className="header-cell">Actions</div>
+
                             </div>
                             <div className="table-row">
                                 <div className="row-cell">Activity 1</div>
@@ -98,10 +98,7 @@ export default function AdminDashboard() {
                                 <div className="row-cell">23/7/2025</div>
                                 <div className="row-cell">Organizer 1</div>
                                 <div className="row-cell">Approved</div>
-                                <div className="row-cell">
-                                    <button className="action-btn approve-btn">Approve</button>
-                                    <button className="action-btn reject-btn">Reject</button>
-                                </div>
+
                             </div>
                             <div className="table-row">
                                 <div className="row-cell">Activity 2</div>
@@ -109,10 +106,7 @@ export default function AdminDashboard() {
                                 <div className="row-cell">24/7/2025</div>
                                 <div className="row-cell">Organizer 2</div>
                                 <div className="row-cell">Pending</div>
-                                <div className="row-cell">
-                                    <button className="action-btn approve-btn">Approve</button>
-                                    <button className="action-btn reject-btn">Reject</button>
-                                </div>
+
                             </div>
                             <div className="table-row">
                                 <div className="row-cell">Activity 3</div>
@@ -120,10 +114,7 @@ export default function AdminDashboard() {
                                 <div className="row-cell">25/7/2025</div>
                                 <div className="row-cell">Organizer 3</div>
                                 <div className="row-cell">Rejected</div>
-                                <div className="row-cell">
-                                    <button className="action-btn approve-btn">Approve</button>
-                                    <button className="action-btn reject-btn">Reject</button>
-                                </div>
+
                             </div>
                         </div>
                     </div>

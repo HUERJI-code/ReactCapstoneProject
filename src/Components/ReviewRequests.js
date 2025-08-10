@@ -86,7 +86,7 @@ const ReviewRequests = () => {
                     </div>
                 </div>
             ) : (
-                <div style={{ textAlign: "center" }}>No requests.</div>
+                <div style={{ textAlign: "center" }} className="no-activity">No requests.</div>
             )}
         </div>
     );

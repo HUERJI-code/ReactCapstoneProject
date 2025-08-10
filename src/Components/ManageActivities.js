@@ -14,6 +14,8 @@ const api = axios.create({
 
 const ManageActivities = () => {
     const [activities, setActivities] = useState([]);
+    const [loaded, setLoaded] = useState(false); // ← 新增：是否已加载完成
+
     const [editingActivity, setEditingActivity] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [allTags, setAllTags] = useState([]);
@@ -28,6 +30,7 @@ const ManageActivities = () => {
     useEffect(() => {
         fetchActivities();
         fetchAllTags();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Reset to first page when opening the tag modal or when tags change
@@ -37,11 +40,12 @@ const ManageActivities = () => {
 
     const fetchActivities = async () => {
         try {
-            // 注意：这里保持你原来的后端路径。如果你的控制器都有前缀 /api/xxx，请改成对应的路径
             const res = await api.get("/getLoginOrganizerActivities");
             setActivities(res.data || []);
         } catch (error) {
             console.error("Failed to fetch activities:", error);
+        } finally {
+            setLoaded(true); // ← 标记加载结束
         }
     };
 
@@ -113,6 +117,17 @@ const ManageActivities = () => {
     // Paginated tags for modal
     const startIdx = (currentPage - 1) * tagsPerPage;
     const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
+
+    // ====== 空状态：只显示主标题 + “no activity” ======
+    if (loaded && activities.length === 0) {
+        return (
+            <div className="manage-activities-container">
+                <h2>My Activities</h2>
+                <p className="no-activity">no activity</p>
+            </div>
+        );
+    }
+
 
     return (
         <div className="manage-activities-container">
@@ -314,7 +329,9 @@ const ManageActivities = () => {
                                                 <button
                                                     type="button"
                                                     className="page-btn"
-                                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                                    onClick={() =>
+                                                        setCurrentPage((p) => Math.max(1, p - 1))
+                                                    }
                                                     disabled={currentPage === 1}
                                                 >
                                                     ‹
@@ -325,7 +342,9 @@ const ManageActivities = () => {
                                                 <button
                                                     type="button"
                                                     className="page-btn"
-                                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                                    onClick={() =>
+                                                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                                                    }
                                                     disabled={currentPage === totalPages}
                                                 >
                                                     ›

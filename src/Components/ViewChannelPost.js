@@ -13,6 +13,7 @@ const api = axios.create({
 
 const ViewChannelPost = () => {
     const [channels, setChannels] = useState([]);
+    const [loaded, setLoaded] = useState(false); // ← 新增：是否已加载完成
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [selectedChannelId, setSelectedChannelId] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -27,6 +28,8 @@ const ViewChannelPost = () => {
             setChannels(res.data || []);
         } catch (error) {
             console.error("Failed to fetch channels:", error?.response || error);
+        } finally {
+            setLoaded(true); // ← 标记加载结束
         }
     };
 
@@ -46,6 +49,16 @@ const ViewChannelPost = () => {
         setShowHistoryModal(true);
         fetchChannelMessages(channelId);
     };
+
+    // ===== 空状态：加载完成且没有频道 → 只显示标题 + “no channel”（居中） =====
+    if (loaded && channels.length === 0) {
+        return (
+            <div className="view-channel-post-container">
+                <h2 style={{ }}>View Channel Posts</h2>
+                <p className="no-channel">no channel</p>
+            </div>
+        );
+    }
 
     return (
         <div className="view-channel-post-container">

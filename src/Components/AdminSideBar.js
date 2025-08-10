@@ -17,6 +17,7 @@ export default function AdminSideBar() {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
     const [unreadMessages, setUnreadMessages] = useState(0);
+    const [username, setUsername] = useState(""); // 新增：保存完整用户名
 
     const isActive = (path) => location.pathname === path;
 
@@ -34,7 +35,10 @@ export default function AdminSideBar() {
 
     const checkLoginStatus = async () => {
         try {
-            await api.get("/api/Login/check"); // 200 即已登录
+            const res = await api.get("/api/Login/check"); // 200 即已登录
+            if (res.data?.username) {
+                setUsername(res.data.username); // 保存用户名
+            }
         } catch (err) {
             const status = err?.response?.status;
             if (status === 401) {
@@ -56,8 +60,12 @@ export default function AdminSideBar() {
     return (
         <div className="sidebar">
             <div className="logo-container">
-                <span className="logo-icon">s</span>
-                <span className="logo-text">SaaS De...</span>
+        <span className="logo-icon">
+          {username ? username.charAt(0).toUpperCase() : "?"}
+        </span>
+                <span className="logo-text">
+          {username || "Loading..."}
+        </span>
                 <span className="logo-dropdown">▼</span>
             </div>
 

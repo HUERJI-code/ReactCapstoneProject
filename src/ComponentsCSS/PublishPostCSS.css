@@ -170,3 +170,10 @@ textarea {
     border-radius: 4px;
     cursor: pointer;
 }
+.no-channel {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}

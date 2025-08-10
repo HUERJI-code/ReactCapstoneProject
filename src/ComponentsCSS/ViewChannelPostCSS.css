@@ -101,3 +101,10 @@ h2 {
 .message-item p {
     margin-bottom: 8px;
 }
+.no-channel {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}

@@ -13,6 +13,7 @@ const api = axios.create({
 
 const PublishPost = () => {
     const [channels, setChannels] = useState([]);
+    const [loaded, setLoaded] = useState(false); // ← 新增
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [postTitle, setPostTitle] = useState("");
     const [postContent, setPostContent] = useState("");
@@ -32,6 +33,8 @@ const PublishPost = () => {
             setChannels(approved);
         } catch (error) {
             console.error("Failed to fetch channels:", error?.response || error);
+        } finally {
+            setLoaded(true); // ← 标记加载结束
         }
     };
 
@@ -64,7 +67,6 @@ const PublishPost = () => {
                 isPinned,
                 isVisible,
                 channelId,
-                // postedAt 让后端写入，别手动填奇怪值
             };
 
             await api.post("/api/channel/channels/messages", postToPublish);
@@ -93,6 +95,16 @@ const PublishPost = () => {
         setIsVisible(true);
         setSelectedChannel(null);
     };
+
+    // ====== 空状态：加载完成且没有频道 ======
+    if (loaded && channels.length === 0) {
+        return (
+            <div className="manage-channels-container">
+                <h2 style={{ }}>Publish Posts</h2>
+                <p className="no-channel">no channel to publish</p>
+            </div>
+        );
+    }
 
     return (
         <div className="manage-channels-container">

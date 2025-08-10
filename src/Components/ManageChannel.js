@@ -14,6 +14,8 @@ const api = axios.create({
 
 const ManageChannel = () => {
     const [channels, setChannels] = useState([]);
+    const [loaded, setLoaded] = useState(false); // ← 新增：是否已加载完成
+
     const [editingChannel, setEditingChannel] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
     const [allTags, setAllTags] = useState([]);
@@ -42,6 +44,8 @@ const ManageChannel = () => {
         } catch (error) {
             console.error("Failed to fetch channels:", error?.response || error);
             alert("Failed to fetch channels.");
+        } finally {
+            setLoaded(true); // ← 标记加载结束
         }
     };
 
@@ -105,6 +109,16 @@ const ManageChannel = () => {
     // Slice tags for current page
     const startIdx = (currentPage - 1) * tagsPerPage;
     const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
+
+    // ====== 空状态：只显示主标题 + “no channel”（居中） ======
+    if (loaded && channels.length === 0) {
+        return (
+            <div className="manage-channels-container">
+                <h2 style={{ }}>Manage Channels</h2>
+                <p className="no-channel">no channel</p>
+            </div>
+        );
+    }
 
     return (
         <div className="manage-channels-container">

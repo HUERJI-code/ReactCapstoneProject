@@ -3,10 +3,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../ComponentsCSS/SideBarCSS.css";
 
-// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
 const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
 
-// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
 const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -17,6 +15,7 @@ const Sidebar = () => {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
     const [unreadMessages, setUnreadMessages] = useState(0);
+    const [username, setUsername] = useState(""); // 存完整用户名
 
     const fetchMessages = async () => {
         try {
@@ -26,7 +25,6 @@ const Sidebar = () => {
             setUnreadMessages(list.filter((m) => m.isRead === false).length);
         } catch (err) {
             console.error("fetchMessages error:", err?.response || err);
-            // 未登录时该接口可能 401，这里不弹窗，交由登录检查处理
         }
     };
 
@@ -34,11 +32,13 @@ const Sidebar = () => {
 
     const checkLoginStatus = async () => {
         try {
-            await api.get("/api/Login/check"); // 200 表示已登录
+            const res = await api.get("/api/Login/check");
+            if (res.data?.username) {
+                setUsername(res.data.username); // 保存完整用户名
+            }
         } catch (err) {
             const status = err?.response?.status;
             if (status === 401) {
-                // 未登录跳转到登录页
                 navigate("/");
                 return;
             }
@@ -63,8 +63,12 @@ const Sidebar = () => {
     return (
         <div className="sidebar">
             <div className="logo-container">
-                <span className="logo-icon">s</span>
-                <span className="logo-text">SaaS De...</span>
+        <span className="logo-icon">
+          {username ? username.charAt(0).toUpperCase() : "?"}
+        </span>
+                <span className="logo-text">
+          {username || "Loading..."}
+        </span>
                 <span className="logo-dropdown">▼</span>
             </div>
 
