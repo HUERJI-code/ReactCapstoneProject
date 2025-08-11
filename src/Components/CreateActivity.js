@@ -32,6 +32,9 @@ const CreateActivity = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const tagsPerPage = 10;
 
+    // Predict loading state
+    const [predicting, setPredicting] = useState(false);
+
     // Compute total pages
     const totalPages = Math.ceil(allTags.length / tagsPerPage);
 
@@ -87,11 +90,11 @@ const CreateActivity = () => {
         }));
     };
 
+    const formatTime = (timeStr) =>
+        timeStr ? dayjs(timeStr).format("YYYY/MM/DD HH:mm") : "";
+
     const handleCreateActivity = async () => {
         try {
-            const formatTime = (timeStr) =>
-                timeStr ? dayjs(timeStr).format("YYYY/MM/DD HH:mm") : "";
-
             const activityToSend = {
                 ...activity,
                 startTime: formatTime(activity.startTime),
@@ -117,6 +120,83 @@ const CreateActivity = () => {
         } catch (error) {
             console.error("Failed to create activity:", error);
             alert("Failed to create activity. Please try again.");
+        }
+    };
+
+    // —— 根据 tagId 选中标签：若本地列表中不存在则先刷新列表再选中 ——
+    const addTagById = async (id) => {
+        // 如果 allTags 里没有，先刷新
+        let tag = allTags.find((t) => t.tagId === id);
+        if (!tag) {
+            await fetchAllTags();
+            tag = (allTags || []).find((t) => t.tagId === id);
+        }
+        if (!tag) return; // 仍然找不到就跳过
+
+        // 已选中的就不重复添加
+        if (selectedTags.some((t) => t.tagId === id)) return;
+
+        setSelectedTags((prev) => [...prev, tag]);
+        setActivity((prev) => ({
+            ...prev,
+            tags: prev.tags.includes(id) ? prev.tags : [...prev.tags, id],
+        }));
+    };
+
+    // —— 点击 Predict Tag 按钮：调用 /api/ML/predict-tags ——
+    const handlePredictTags = async () => {
+        const { title, description } = activity;
+
+        if (!title?.trim() || !description?.trim()) {
+            alert("Please fill in Title and Description first.");
+            return;
+        }
+
+        try {
+            setPredicting(true);
+
+            // 请求体示例：
+            // {
+            //   "title": "Urban Photography Exhibition",
+            //   "description": "Showcase cityscape works by young photographers"
+            // }
+            const res = await api.post("/api/ML/predict-tags", {
+                title: title.trim(),
+                description: description.trim(),
+            });
+
+            // 兼容可能的返回格式：{ tagId: 3 } 或 { tagIds: [3,5] } 或 [3,5]
+            const data = res.data || {};
+            let ids = [];
+
+            if (typeof data.tagId === "number") {
+                ids = [data.tagId];
+            } else if (Array.isArray(data.tagIds)) {
+                ids = data.tagIds.filter((x) => typeof x === "number");
+            } else if (Array.isArray(data)) {
+                ids = data.filter((x) => typeof x === "number");
+            }
+
+            if (!ids.length) {
+                alert("No tagId returned from prediction.");
+                return;
+            }
+
+            // 重新拉取标签列表（以防预测出的 tag 不在本地列表中）
+            await fetchAllTags();
+
+            // 依次选中这些标签
+            for (const id of ids) {
+                // eslint-disable-next-line no-await-in-loop
+                await addTagById(id);
+            }
+
+            alert("Predicted tag(s) added.");
+        } catch (err) {
+            console.error("Predict tags failed:", err?.response || err);
+            alert("Failed to predict tags. Please try again.");
+        } finally {
+            setPredicting(false);
         }
     };
 
@@ -174,11 +254,7 @@ const CreateActivity = () => {
                         <input
                             type="datetime-local"
                             name="startTime"
-                            value={
-                                activity.startTime
-                                    ? new Date(activity.startTime).toISOString().slice(0, 16)
-                                    : ""
-                            }
+                            value={activity.startTime ? new Date(activity.startTime).toISOString().slice(0, 16) : ""}
                             onChange={handleInputChange}
                             required
                         />
@@ -190,11 +266,7 @@ const CreateActivity = () => {
                         <input
                             type="datetime-local"
                             name="endTime"
-                            value={
-                                activity.endTime
-                                    ? new Date(activity.endTime).toISOString().slice(0, 16)
-                                    : ""
-                            }
+                            value={activity.endTime ? new Date(activity.endTime).toISOString().slice(0, 16) : ""}
                             onChange={handleInputChange}
                             required
                         />
@@ -256,14 +328,13 @@ const CreateActivity = () => {
                         <div className="tag-modal-overlay">
                             <div className="tag-modal">
                                 <h3>Please select your activity tags</h3>
+
                                 <div className="tags-container">
                                     {paginatedTags.map((tag) => (
                                         <div
                                             key={tag.tagId}
                                             className={`tag-item ${
-                                                selectedTags.some((t) => t.tagId === tag.tagId)
-                                                    ? "selected"
-                                                    : ""
+                                                selectedTags.some((t) => t.tagId === tag.tagId) ? "selected" : ""
                                             }`}
                                             onClick={() => handleTagSelect(tag)}
                                         >
@@ -296,7 +367,18 @@ const CreateActivity = () => {
                                     </div>
                                 )}
 
+                                {/* 底部按钮区：先 Predict Tag，再 Back */}
                                 <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className={`predict-btn ${predicting ? "disabled" : ""}`}
+                                        onClick={handlePredictTags}
+                                        disabled={predicting}
+                                        title="Predict tags from Title & Description"
+                                    >
+                                        {predicting ? "Predicting..." : "Predict Tag"}
+                                    </button>
+
                                     <button
                                         type="button"
                                         className="back-btn"
