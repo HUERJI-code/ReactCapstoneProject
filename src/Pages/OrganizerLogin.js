@@ -55,7 +55,7 @@ export default function LoginOrganizer() {
             alert("Failed to fetch user type");
         }
     }
-
+    //testpush
     return (
         <div className="login-wrapper">
             <div className="login-card">
