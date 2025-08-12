@@ -1,5 +1,5 @@
 // ManageActivities.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/ManageActivitiesCSS.css";
 
@@ -14,7 +14,7 @@ const api = axios.create({
 
 const ManageActivities = () => {
     const [activities, setActivities] = useState([]);
-    const [loaded, setLoaded] = useState(false); // ← 新增：是否已加载完成
+    const [loaded, setLoaded] = useState(false);
 
     const [editingActivity, setEditingActivity] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -22,10 +22,19 @@ const ManageActivities = () => {
     const [selectedTags, setSelectedTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
 
-    // Pagination state for tag modal
+    // Tag modal pagination
     const [currentPage, setCurrentPage] = useState(1);
     const tagsPerPage = 10;
     const totalPages = Math.ceil(allTags.length / tagsPerPage);
+
+    // 搜索 & 视图切换 & 隐藏搜索区
+    const [searchTerm, setSearchTerm] = useState("");
+    const [showOverview, setShowOverview] = useState(false);
+    const [showSearchBar, setShowSearchBar] = useState(true);
+
+    // 新增：loading / err
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState("");
 
     useEffect(() => {
         fetchActivities();
@@ -33,19 +42,22 @@ const ManageActivities = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Reset to first page when opening the tag modal or when tags change
     useEffect(() => {
         if (showTagModal) setCurrentPage(1);
     }, [showTagModal, allTags]);
 
     const fetchActivities = async () => {
+        setLoading(true);
+        setErr("");
         try {
             const res = await api.get("/getLoginOrganizerActivities");
             setActivities(res.data || []);
         } catch (error) {
-            console.error("Failed to fetch activities:", error);
+            console.error("Failed to fetch activities:", error?.response || error);
+            setErr("Failed to fetch activities.");
         } finally {
-            setLoaded(true); // ← 标记加载结束
+            setLoading(false);
+            setLoaded(true);
         }
     };
 
@@ -63,7 +75,7 @@ const ManageActivities = () => {
         setSelectedTags(
             tagIds.map((id) => allTags.find((t) => t.tagId === id)).filter(Boolean)
         );
-        setEditingActivity({ ...activity }); // clone
+        setEditingActivity({ ...activity });
         setShowEditModal(true);
     };
 
@@ -71,7 +83,6 @@ const ManageActivities = () => {
         const { name, value } = e.target;
 
         if (name === "startTime" || name === "endTime") {
-            // from "YYYY-MM-DDTHH:mm" to "YYYY/MM/DD HH:mm"
             const formatted = value ? value.replace("T", " ").replace(/-/g, "/") : "";
             setEditingActivity((prev) => ({ ...prev, [name]: formatted }));
         } else {
@@ -114,12 +125,55 @@ const ManageActivities = () => {
         setSelectedTags([]);
     };
 
-    // Paginated tags for modal
+    // —— 把 Hooks（useMemo）放在任何 return 之前 —— //
+
+    // 模糊搜索（title/location/status/date(yyyy/mm/dd)）
+    const filteredActivities = useMemo(() => {
+        const q = (searchTerm || "").trim().toLowerCase();
+        if (!q) return activities;
+        return activities.filter((a) => {
+            const title = (a.title || "").toLowerCase();
+            const location = (a.location || "").toLowerCase();
+            const status = (a.status || "").toLowerCase();
+            const dateStr = ((a.startTime || "").split(" ")[0] || "").toLowerCase();
+            return (
+                title.includes(q) ||
+                location.includes(q) ||
+                status.includes(q) ||
+                dateStr.includes(q)
+            );
+        });
+    }, [activities, searchTerm]);
+
+    // Overview 统计
+    const overviewStats = useMemo(() => {
+        const total = activities.length;
+        const now = new Date();
+
+        let upcoming = 0;
+        let past = 0;
+        const statusMap = {};
+        activities.forEach((a) => {
+            const st = (a.status || "Unknown").trim();
+            statusMap[st] = (statusMap[st] || 0) + 1;
+
+            const raw = a.startTime || "";
+            const dt = raw ? new Date(raw.replace(/\//g, "-")) : null;
+            if (dt && !isNaN(dt.getTime())) {
+                if (dt >= now) upcoming++;
+                else past++;
+            }
+        });
+
+        return { total, upcoming, past, statusMap };
+    }, [activities]);
+
+    // Tag modal pagination data
     const startIdx = (currentPage - 1) * tagsPerPage;
     const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
 
-    // ====== 空状态：只显示主标题 + “no activity” ======
-    if (loaded && activities.length === 0) {
+    // ====== 空状态：初始加载无任何活动（不显示工具条/列表） ======
+    if (!loading && !err && loaded && activities.length === 0) {
         return (
             <div className="manage-activities-container">
                 <h2>My Activities</h2>
@@ -128,55 +182,122 @@ const ManageActivities = () => {
         );
     }
 
-
     return (
         <div className="manage-activities-container">
             <h2>My Activities</h2>
 
-            <div className="activities-header">
-                <div className="view-options">
-                    <button className="overview-btn">📊 Overview</button>
-                    <button className="list-btn active">📋 List</button>
-                </div>
-                <div className="search-customize">
-                    <input type="text" placeholder="Search..." className="search-input" />
-                    <button className="hide-btn">⨉Hide</button>
-                    <div className="customize-dropdown">
-                        <button className="customize-btn">Customize</button>
+            {/* 顶部提示条 */}
+            {loading && <div className="banner info">Loading...</div>}
+            {err && <div className="banner error">{err}</div>}
+
+            {/* 顶部工具条：只要初始非空（activities.length > 0），之后搜索为空也不隐藏 */}
+            {!loading && activities.length > 0 && (
+                <div className="activities-header">
+                    <div className="view-options">
+                        <button
+                            className={`overview-btn ${showOverview ? "active" : ""}`}
+                            onClick={() => setShowOverview(true)}
+                        >
+                            📊 Overview
+                        </button>
+                        <button
+                            className={`list-btn ${!showOverview ? "active" : ""}`}
+                            onClick={() => setShowOverview(false)}
+                        >
+                            📋 List
+                        </button>
+                    </div>
+
+                    <div className="search-customize">
+                        {showSearchBar && (
+                            <input
+                                type="text"
+                                placeholder="Search by title / location / status / date..."
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        )}
+                        <button
+                            className="hide-btn"
+                            onClick={() => setShowSearchBar((v) => !v)}
+                            title={showSearchBar ? "Hide search bar" : "Show search bar"}
+                        >
+                            {showSearchBar ? "⨉Hide" : "Show"}
+                        </button>
                     </div>
                 </div>
-            </div>
+            )}
 
-            <div className="activities-table">
-                <div className="table-header">
-                    <div className="table-cell">Activity Name</div>
-                    <div className="table-cell">Location</div>
-                    <div className="table-cell">Date</div>
-                    <div className="table-cell">Status</div>
-                    <div className="table-cell">Actions</div>
-                </div>
-                <div className="table-body">
-                    {activities.map((activity) => (
-                        <div className="table-row" key={activity.activityId}>
-                            <div className="table-cell">{activity.title}</div>
-                            <div className="table-cell">{activity.location}</div>
-                            <div className="table-cell">
-                                {(activity.startTime || "").split(" ")[0]}
-                            </div>
-                            <div className="table-cell">{activity.status}</div>
-                            <div className="table-cell">
-                                <button
-                                    className="edit-btn"
-                                    onClick={() => handleEditClick(activity)}
-                                >
-                                    Edit
-                                </button>
-                                <button className="cancel-btn">Cancel</button>
+            {/* 主体：Overview 或 列表（列表表头仅在有结果时出现） */}
+            {!loading && !err && (
+                showOverview ? (
+                    <div className="overview-grid">
+                        <div className="overview-card">
+                            <div className="overview-title">Total</div>
+                            <div className="overview-number">{overviewStats.total}</div>
+                        </div>
+                        <div className="overview-card">
+                            <div className="overview-title">Upcoming</div>
+                            <div className="overview-number">{overviewStats.upcoming}</div>
+                        </div>
+                        <div className="overview-card">
+                            <div className="overview-title">Past</div>
+                            <div className="overview-number">{overviewStats.past}</div>
+                        </div>
+                        <div className="overview-card wide">
+                            <div className="overview-title">By Status</div>
+                            <div className="status-list">
+                                {Object.keys(overviewStats.statusMap).length === 0 ? (
+                                    <span className="status-item">No status data</span>
+                                ) : (
+                                    Object.entries(overviewStats.statusMap).map(([k, v]) => (
+                                        <span key={k} className="status-item">
+                      {k}: <b>{v}</b>
+                    </span>
+                                    ))
+                                )}
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
+                ) : filteredActivities.length > 0 ? (
+                    <div className="activities-table">
+                        <div className="table-header">
+                            <div className="table-cell">Activity Name</div>
+                            <div className="table-cell">Location</div>
+                            <div className="table-cell">Date</div>
+                            <div className="table-cell">Status</div>
+                            <div className="table-cell">Actions</div>
+                        </div>
+
+                        <div className="table-body">
+                            {filteredActivities.map((activity) => (
+                                <div className="table-row" key={activity.activityId}>
+                                    <div className="table-cell">{activity.title}</div>
+                                    <div className="table-cell">{activity.location}</div>
+                                    <div className="table-cell">
+                                        {(activity.startTime || "").split(" ")[0]}
+                                    </div>
+                                    <div className="table-cell">{activity.status}</div>
+                                    <div className="table-cell">
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => handleEditClick(activity)}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button className="cancel-btn">Cancel</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    activities.length > 0 && (
+                        <p className="no-data">No matching activities</p>
+                    )
+                )
+            )}
 
             {showEditModal && editingActivity && (
                 <div className="edit-modal-overlay">

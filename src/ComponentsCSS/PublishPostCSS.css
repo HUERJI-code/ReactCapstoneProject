@@ -13,7 +13,9 @@ h2 {
 .channels-header {
     display: flex;
     justify-content: space-between;
+    gap: 16px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .view-options {
@@ -43,9 +45,10 @@ h2 {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    min-width: 280px;
 }
 
-.hide-btn, .customize-btn {
+.hide-btn {
     padding: 8px 16px;
     background: none;
     border: 1px solid #ddd;
@@ -53,6 +56,57 @@ h2 {
     cursor: pointer;
 }
 
+/* Overview */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.overview-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.overview-card.wide {
+    grid-column: span 3;
+}
+
+.overview-title {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.overview-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.status-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 4px;
+}
+
+.status-item {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #374151;
+}
+
+/* Table */
 .channels-table {
     width: 100%;
     border-collapse: collapse;
@@ -83,6 +137,14 @@ h2 {
     flex: 1;
 }
 
+.table-empty {
+    padding: 24px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+/* Buttons */
 .edit-btn, .cancel-btn {
     padding: 6px 12px;
     margin-left: 10px;
@@ -101,6 +163,7 @@ h2 {
     color: white;
 }
 
+/* Modal */
 .edit-modal-overlay {
     position: fixed;
     top: 0;
@@ -134,9 +197,9 @@ h2 {
 .form-group label {
     display: flex;
     align-items: center;
-    gap: 8px; /* 调整这个值来改变单选框和文字之间的间距 */
+    gap: 8px;
     margin-bottom: 0;
-    white-space: nowrap; /* 防止文字换行 */
+    white-space: nowrap;
 }
 
 .form-group input[type="checkbox"] {
@@ -170,10 +233,21 @@ textarea {
     border-radius: 4px;
     cursor: pointer;
 }
+
 .no-channel {
     margin-top: 20px;
     font-size: 16px;
     color: #888;
     font-style: italic;
     text-align: center;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+    .overview-card.wide {
+        grid-column: auto;
+    }
 }

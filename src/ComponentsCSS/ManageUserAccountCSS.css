@@ -10,6 +10,121 @@ h2 {
     color: #333;
 }
 
+/* 顶部工具条 */
+.users-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.view-options {
+    display: flex;
+    gap: 10px;
+}
+
+.view-options button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.view-options button.active {
+    background-color: #f0f2f5;
+}
+
+.search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 280px;
+}
+
+.hide-btn {
+    padding: 8px 16px;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Overview */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.overview-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+/* 强制 Overview 徽章里的文字全黑 */
+.overview-card .badge,
+.overview-card .badge *,
+.overview-card .badge b,
+.overview-card .badge strong,
+.overview-card .badge span {
+    color: #000 !important;
+    -webkit-text-fill-color: #000 !important; /* 兼容某些白色填充 */
+    text-shadow: none !important;
+    font-weight: 700;
+}
+
+
+.overview-card.wide {
+    grid-column: span 3;
+}
+
+.overview-title {
+    font-size: 14px;
+    color: #000;
+}
+
+.overview-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+}
+
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 4px;
+}
+
+.badge {
+    background: #f9fafb; /* 浅灰背景 */
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #000000; /* 全部文字改为黑色 */
+}
+.badge b {
+    color: #000; /* 数字也保持黑色 */
+    font-weight: 700;
+}
+
+
+/* 表格 */
 .user-table {
     width: 100%;
     border-collapse: collapse;
@@ -25,6 +140,13 @@ th {
     background-color: #f2f2f2;
 }
 
+.table-empty {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+/* 按钮 */
 button {
     padding: 5px 10px;
     margin-right: 5px;
@@ -35,15 +157,34 @@ button {
 }
 
 .ban-button {
-    background-color: #dc3545; /* Red color for ban button */
+    background-color: #dc3545;
     color: white;
 }
 
 .unban-button {
-    background-color: #28a745; /* Green color for unban button */
+    background-color: #28a745;
     color: white;
 }
 
 button:hover {
-    opacity: 0.8;
+    opacity: 0.85;
+}
+
+/* 空状态 */
+.no-user {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #888;
+    font-style: italic;
+    text-align: center;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+    .overview-card.wide {
+        grid-column: auto;
+    }
 }

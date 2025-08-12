@@ -10,10 +10,7 @@ export default function Dashboard() {
                     <div className="page-title">
                         <h2>Dashboards</h2>
                     </div>
-                    <div className="search-box">
-                        <i className="search-icon">🔍</i>
-                        <input type="text" placeholder="Search" className="search-input" />
-                    </div>
+
                 </div>
 
                 {/* 内容区域 */}
@@ -74,10 +71,7 @@ export default function Dashboard() {
                             <div className="channels-title">
                                 <span>My Channels</span>
                             </div>
-                            <div className="search-activities">
-                                <i className="search-icon">🔍</i>
-                                <span>Search</span>
-                            </div>
+
                         </div>
                         <div className="activities-table">
                             <div className="table-header">

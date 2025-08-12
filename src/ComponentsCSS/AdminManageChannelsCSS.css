@@ -1,3 +1,4 @@
+/* AdminManageChannelsCSS.css */
 .admin-manage-channels-container {
     padding: 20px;
     max-width: 1200px;
@@ -9,27 +10,151 @@ h2 {
     color: #333;
 }
 
+/* 顶部工具条 */
+.channels-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.view-options {
+    display: flex;
+    gap: 10px;
+}
+
+.view-options button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.view-options button.active {
+    background-color: #f0f2f5;
+}
+
+.search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 280px;
+}
+
+.hide-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Overview */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.overview-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.overview-card.wide {
+    grid-column: span 3;
+}
+
+.overview-title {
+    font-size: 14px;
+    color: #000;
+}
+
+.overview-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+}
+
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 4px;
+}
+
+.badge {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #000;     /* 纯黑 */
+}
+
+.badge b {
+    color: #000;     /* 纯黑 */
+    font-weight: 700;
+}
+
+/* 表格（固定列宽 + 不错位） */
 .channels-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* 配合 colgroup 固定列宽 */
 }
+
+.col-id { width: 10%; }
+.col-name { width: 25%; }
+.col-desc { width: 35%; }
+.col-status { width: 15%; }
+.col-actions { width: 15%; }
 
 .channels-table thead th {
     text-align: left;
     padding: 12px;
     background-color: #f9fafc;
     border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap; /* 表头不换行更工整 */
 }
 
 .channels-table tbody tr {
     cursor: pointer;
 }
 
-.channels-table tbody td {
+.channels-table td {
     padding: 12px;
     border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+    word-break: break-word;
 }
 
+/* 日期/状态/操作列不换行（这里没有日期列；保持状态/操作不换行） */
+.channels-table td.cell-status,
+.channels-table td.cell-actions,
+.channels-table th:nth-child(4),
+.channels-table th:nth-child(5) {
+    white-space: nowrap;
+}
+
+.cell-id { text-align: center; }
+
+/* 按钮 */
 .ban-button,
 .unban-button,
 .view-messages-btn,
@@ -41,23 +166,25 @@ h2 {
     cursor: pointer;
 }
 
-.ban-button {
-    background-color: #e53935;
-    color: #fff;
-}
+.ban-button { background-color: #e53935; color: #fff; }
+.ban-button:hover { background-color: #c62828; }
 
-.ban-button:hover {
-    background-color: #c62828;
-}
+.unban-button { background-color: #4caf50; color: #fff; }
+.unban-button:hover { background-color: #43a047; }
 
-.unban-button {
-    background-color: #4caf50;
-    color: #fff;
-}
+.view-messages-btn { background-color: #1976d2; color: #fff; }
+.view-messages-btn:hover { background-color: #1565c0; }
 
-.unban-button:hover {
-    background-color: #43a047;
+.refresh-btn { background-color: #455a64; color: #fff; }
+.refresh-btn:hover { background-color: #37474f; }
+
+.close-btn {
+    background: none;
+    font-size: 22px;
+    line-height: 1;
+    color: #555;
 }
+.close-btn:hover { color: #000; }
 
 /* 详情弹窗 */
 .details-modal-overlay {
@@ -88,36 +215,13 @@ h2 {
     margin-bottom: 12px;
 }
 
-.details-modal-body p {
-    margin: 8px 0;
-}
+.details-modal-body p { margin: 8px 0; }
 
 .details-modal-footer {
     margin-top: 16px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-}
-
-.view-messages-btn {
-    background-color: #1976d2;
-    color: #fff;
-}
-
-.view-messages-btn:hover {
-    background-color: #1565c0;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 22px;
-    line-height: 1;
-    color: #555;
-}
-
-.close-btn:hover {
-    color: #000;
 }
 
 /* 消息弹窗 */
@@ -128,7 +232,7 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 60; /* 高于详情弹窗 */
+    z-index: 60;
 }
 
 .messages-modal {
@@ -149,57 +253,39 @@ h2 {
     margin-bottom: 12px;
 }
 
-.messages-content {
-    margin-top: 8px;
-}
+.messages-content { margin-top: 8px; }
 
-.loading,
-.error-text,
-.empty-text {
+.loading, .error-text, .empty-text {
     padding: 12px;
     border-radius: 6px;
     margin: 10px 0;
 }
 
-.loading {
-    background-color: #f3f6ff;
+.loading { background-color: #f3f6ff; }
+.error-text { background-color: #ffebee; color: #c62828; }
+.empty-text { background-color: #f5f5f5; color: #666; }
+
+.messages-list { margin-top: 12px; }
+
+.message-item { padding: 12px 0; border-bottom: 1px solid #e0e0e0; }
+.message-item p { margin-bottom: 6px; }
+
+/* 空状态 */
+.no-channel {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #888;
+    font-style: italic;
+    text-align: center;
 }
 
-.error-text {
-    background-color: #ffebee;
-    color: #c62828;
+/* 响应式 */
+@media (max-width: 768px) {
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-card.wide { grid-column: auto; }
 }
-
-.empty-text {
-    background-color: #f5f5f5;
-    color: #666;
-}
-
-.messages-list {
-    margin-top: 12px;
-}
-
-.message-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.message-item p {
-    margin-bottom: 6px;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-.refresh-btn {
-    background-color: #455a64;
-    color: #fff;
-}
-
-.refresh-btn:hover {
-    background-color: #37474f;
+.table-not {
+    padding: 24px;
+    text-align: center;
+    color: #000;
 }

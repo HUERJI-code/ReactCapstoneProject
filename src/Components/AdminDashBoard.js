@@ -10,10 +10,6 @@ export default function AdminDashboard() {
                     <div className="page-title">
                         <h2>Admin Dashboard</h2>
                     </div>
-                    <div className="search-box">
-                        <i className="search-icon">🔍</i>
-                        <input type="text" placeholder="Search" className="search-input" />
-                    </div>
                 </div>
 
                 {/* 内容区域 */}

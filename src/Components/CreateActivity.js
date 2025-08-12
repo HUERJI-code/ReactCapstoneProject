@@ -1,5 +1,5 @@
 // CreateActivity.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/CreateActivityCSS.css";
 import dayjs from "dayjs";
@@ -35,8 +35,11 @@ const CreateActivity = () => {
     // Predict loading state
     const [predicting, setPredicting] = useState(false);
 
-    // Compute total pages
-    const totalPages = Math.ceil(allTags.length / tagsPerPage);
+    // NEW: 搜索与创建新标签相关状态
+    const [searchTerm, setSearchTerm] = useState("");
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [newTagName, setNewTagName] = useState("");
+    const [creatingTag, setCreatingTag] = useState(false);
 
     useEffect(() => {
         fetchAllTags();
@@ -46,6 +49,9 @@ const CreateActivity = () => {
     useEffect(() => {
         if (showTagModal) {
             setCurrentPage(1);
+            setSearchTerm("");     // NEW: 打开时重置搜索
+            setShowAddForm(false); // NEW
+            setNewTagName("");     // NEW
         }
     }, [showTagModal, allTags]);
 
@@ -155,11 +161,6 @@ const CreateActivity = () => {
         try {
             setPredicting(true);
 
-            // 请求体示例：
-            // {
-            //   "title": "Urban Photography Exhibition",
-            //   "description": "Showcase cityscape works by young photographers"
-            // }
             const res = await api.post("/api/ML/predict-tags", {
                 title: title.trim(),
                 description: description.trim(),
@@ -199,11 +200,71 @@ const CreateActivity = () => {
             setPredicting(false);
         }
     };
-//123123
+
+    // NEW: 过滤逻辑（根据搜索关键字）
+    const filteredTags = useMemo(() => {
+        const q = searchTerm.trim().toLowerCase();
+        if (!q) return allTags;
+        return allTags.filter((t) => (t.name || "").toLowerCase().includes(q));
+    }, [allTags, searchTerm]);
+
+    // Compute total pages (基于过滤后的列表)
+    const totalPages = Math.ceil(filteredTags.length / tagsPerPage) || 1;
+
     // Determine which tags to show on the current page
     const indexStart = (currentPage - 1) * tagsPerPage;
     const indexEnd = indexStart + tagsPerPage;
-    const paginatedTags = allTags.slice(indexStart, indexEnd);
+    const paginatedTags = filteredTags.slice(indexStart, indexEnd);
+
+    // NEW: 创建新标签
+    const handleCreateNewTag = async () => {
+        const name = (newTagName || searchTerm || "").trim();
+        if (!name) {
+            alert("Tag name cannot be empty.");
+            return;
+        }
+        try {
+            setCreatingTag(true);
+            // 后端要求：name + description="1"
+            const res = await api.post("/createTag", {
+                name,
+                description: "1",
+            });
+
+            // 按你的说明，服务端返回 CreatedAtAction(..., tag)
+            const created = res?.data;
+            let createdId = created?.tagId;
+
+            // 无论如何都刷新一次（按你的需求）
+            await fetchAllTags();
+
+            // 若返回里拿到了 id，优先用；否则在 allTags 中查找同名
+            if (!createdId) {
+                const found = (allTags || []).find(
+                    (t) => (t.name || "").toLowerCase() === name.toLowerCase()
+                );
+                if (found) createdId = found.tagId;
+            }
+
+            if (createdId) {
+                await addTagById(createdId);
+                alert(`Tag "${name}" created and selected.`);
+            } else {
+                alert(`Tag "${name}" created. Please select it from the list.`);
+            }
+
+            // 重置创建表单
+            setShowAddForm(false);
+            setNewTagName("");
+            setSearchTerm("");
+            setCurrentPage(1);
+        } catch (err) {
+            console.error("Create tag failed:", err?.response || err);
+            alert("Failed to create tag. Please try again.");
+        } finally {
+            setCreatingTag(false);
+        }
+    };
 
     return (
         <div className="create-activity-container">
@@ -303,15 +364,15 @@ const CreateActivity = () => {
                         <div className="tag-container">
                             {selectedTags.map((tag) => (
                                 <span key={tag.tagId} className="selected-tag">
-                  {tag.name}
+                                    {tag.name}
                                     <button
                                         type="button"
                                         onClick={() => handleTagRemove(tag.tagId)}
                                         className="remove-tag"
                                     >
-                    ×
-                  </button>
-                </span>
+                                        ×
+                                    </button>
+                                </span>
                             ))}
                             <button
                                 type="button"
@@ -329,6 +390,73 @@ const CreateActivity = () => {
                             <div className="tag-modal">
                                 <h3>Please select your activity tags</h3>
 
+                                {/* NEW: 搜索框 */}
+                                <div className="tag-search-row">
+                                    <input
+                                        type="text"
+                                        className="tag-search-input"
+                                        placeholder="Search tag by name..."
+                                        value={searchTerm}
+                                        onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            setCurrentPage(1);
+                                            setShowAddForm(false);
+                                            setNewTagName("");
+                                        }}
+                                    />
+                                </div>
+
+                                {/* NEW: 无结果时的引导区 */}
+                                {filteredTags.length === 0 && !showAddForm && (
+                                    <div className="no-result-row">
+                                        <span>No tags found.</span>
+                                        <button
+                                            type="button"
+                                            className="add-new-tag-inline-btn"
+                                            onClick={() => {
+                                                setShowAddForm(true);
+                                                setNewTagName(searchTerm.trim());
+                                            }}
+                                        >
+                                            Add “{searchTerm.trim() || "new"}”
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* NEW: 新建标签表单（内联） */}
+                                {showAddForm && (
+                                    <div className="add-new-tag-form">
+                                        <input
+                                            type="text"
+                                            className="add-new-tag-input"
+                                            placeholder="Enter new tag name"
+                                            value={newTagName}
+                                            onChange={(e) => setNewTagName(e.target.value)}
+                                        />
+                                        <div className="add-new-tag-actions">
+                                            <button
+                                                type="button"
+                                                className={`create-new-tag-btn ${creatingTag ? "disabled" : ""}`}
+                                                onClick={handleCreateNewTag}
+                                                disabled={creatingTag}
+                                            >
+                                                {creatingTag ? "Creating..." : "Create & Select"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="cancel-new-tag-btn"
+                                                onClick={() => {
+                                                    setShowAddForm(false);
+                                                    setNewTagName("");
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 标签列表（可分页） */}
                                 <div className="tags-container">
                                     {paginatedTags.map((tag) => (
                                         <div
@@ -343,7 +471,7 @@ const CreateActivity = () => {
                                     ))}
                                 </div>
 
-                                {totalPages > 1 && (
+                                {filteredTags.length > 0 && totalPages > 1 && (
                                     <div className="pagination">
                                         <button
                                             type="button"
@@ -354,8 +482,8 @@ const CreateActivity = () => {
                                             ‹
                                         </button>
                                         <span className="page-info">
-                      Page {currentPage} / {totalPages}
-                    </span>
+                                            Page {currentPage} / {totalPages}
+                                        </span>
                                         <button
                                             type="button"
                                             className="page-btn"

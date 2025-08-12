@@ -14,6 +14,8 @@ h2 {
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .view-options {
@@ -43,6 +45,7 @@ h2 {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    max-width: 280px;
 }
 
 .hide-btn, .customize-btn {
@@ -56,6 +59,14 @@ h2 {
 .activities-table {
     width: 100%;
     border-collapse: collapse;
+}
+
+.activities-table thead th{
+    text-align: left;
+    padding: 12px;
+    background-color: #f9fafc;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap; /* 表头不换行更工整 */
 }
 
 .table-header {
@@ -138,4 +149,16 @@ h2 {
 
 button:hover {
     opacity: 0.8;
+}
+
+.table-empty {
+    padding: 24px;
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+.table-not {
+    padding: 24px;
+    text-align: center;
+    color: #000;
 }

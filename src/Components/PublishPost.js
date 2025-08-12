@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// PublishPost.js
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/PublishPostCSS.css";
 
@@ -13,7 +14,8 @@ const api = axios.create({
 
 const PublishPost = () => {
     const [channels, setChannels] = useState([]);
-    const [loaded, setLoaded] = useState(false); // ← 新增
+    const [loaded, setLoaded] = useState(false);
+
     const [showPublishModal, setShowPublishModal] = useState(false);
     const [postTitle, setPostTitle] = useState("");
     const [postContent, setPostContent] = useState("");
@@ -22,19 +24,33 @@ const PublishPost = () => {
     const [selectedChannel, setSelectedChannel] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // 搜索/视图切换/隐藏搜索条
+    const [searchTerm, setSearchTerm] = useState("");
+    const [showOverview, setShowOverview] = useState(false);
+    const [showSearchBar, setShowSearchBar] = useState(true);
+
+    // 新增：loading / err
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState("");
+
     useEffect(() => {
         fetchChannels();
     }, []);
 
     const fetchChannels = async () => {
+        setLoading(true);
+        setErr("");
         try {
             const res = await api.get("/getOrganizerOwnedChannel");
             const approved = (res.data || []).filter((c) => c.status === "approved");
             setChannels(approved);
         } catch (error) {
             console.error("Failed to fetch channels:", error?.response || error);
+            setErr("Failed to fetch channels.");
+            setChannels([]);
         } finally {
-            setLoaded(true); // ← 标记加载结束
+            setLoading(false);
+            setLoaded(true);
         }
     };
 
@@ -96,11 +112,40 @@ const PublishPost = () => {
         setSelectedChannel(null);
     };
 
-    // ====== 空状态：加载完成且没有频道 ======
-    if (loaded && channels.length === 0) {
+    // 模糊搜索（name / description / url / status）
+    const filteredChannels = useMemo(() => {
+        const q = (searchTerm || "").trim().toLowerCase();
+        if (!q) return channels;
+        return channels.filter((ch) => {
+            const name = (ch.name || "").toLowerCase();
+            const desc = (ch.description || "").toLowerCase();
+            const url = (ch.url || "").toLowerCase();
+            const status = (ch.status || "").toLowerCase();
+            return (
+                name.includes(q) ||
+                desc.includes(q) ||
+                url.includes(q) ||
+                status.includes(q)
+            );
+        });
+    }, [channels, searchTerm]);
+
+    // Overview 统计（channels 已经是 approved 列表）
+    const overviewStats = useMemo(() => {
+        const total = channels.length;
+        const statusMap = {};
+        channels.forEach((c) => {
+            const st = (c.status || "Unknown").trim();
+            statusMap[st] = (statusMap[st] || 0) + 1;
+        });
+        return { total, statusMap };
+    }, [channels]);
+
+    // 空状态：加载完成且没有频道（不显示工具条）
+    if (!loading && !err && loaded && channels.length === 0) {
         return (
             <div className="manage-channels-container">
-                <h2 style={{ }}>Publish Posts</h2>
+                <h2>Publish Posts</h2>
                 <p className="no-channel">no channel to publish</p>
             </div>
         );
@@ -109,40 +154,102 @@ const PublishPost = () => {
     return (
         <div className="manage-channels-container">
             <h2>Publish Posts</h2>
-            <div className="channels-header">
-                <div className="view-options">
-                    <button className="overview-btn">📊 Overview</button>
-                    <button className="list-btn active">📋 List</button>
-                </div>
-                <div className="search-customize">
-                    <input type="text" placeholder="Search..." className="search-input" />
-                    <button className="hide-btn">⨉Hide</button>
-                    <div className="customize-dropdown">
-                        <button className="customize-btn">Customize</button>
+
+            {/* 顶部提示条 */}
+            {loading && <div className="banner info">Loading...</div>}
+            {err && <div className="banner error">{err}</div>}
+
+            {/* 顶部工具条：只要初始非空（channels.length > 0），之后搜索为空也不隐藏 */}
+            {!loading && channels.length > 0 && (
+                <div className="channels-header">
+                    <div className="view-options">
+                        <button
+                            className={`overview-btn ${showOverview ? "active" : ""}`}
+                            onClick={() => setShowOverview(true)}
+                        >
+                            📊 Overview
+                        </button>
+                        <button
+                            className={`list-btn ${!showOverview ? "active" : ""}`}
+                            onClick={() => setShowOverview(false)}
+                        >
+                            📋 List
+                        </button>
+                    </div>
+                    <div className="search-customize">
+                        {showSearchBar && (
+                            <input
+                                type="text"
+                                placeholder="Search by name / description / url / status..."
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        )}
+                        <button
+                            className="hide-btn"
+                            onClick={() => setShowSearchBar((v) => !v)}
+                            title={showSearchBar ? "Hide search bar" : "Show search bar"}
+                        >
+                            {showSearchBar ? "⨉Hide" : "Show"}
+                        </button>
                     </div>
                 </div>
-            </div>
+            )}
 
-            <div className="channels-table">
-                <div className="table-header">
-                    <div className="table-cell">Channel Name</div>
-                    <div className="table-cell">Description</div>
-                    <div className="table-cell">Actions</div>
-                </div>
-                <div className="table-body">
-                    {channels.map((channel) => (
-                        <div className="table-row" key={channel.id ?? channel.channelId}>
-                            <div className="table-cell">{channel.name}</div>
-                            <div className="table-cell">{channel.description}</div>
-                            <div className="table-cell">
-                                <button className="edit-btn" onClick={() => handlePublishClick(channel)}>
-                                    Publish
-                                </button>
+            {/* 主区域：Overview 或 列表（列表表头仅在有结果时出现） */}
+            {!loading && !err && (
+                showOverview ? (
+                    <div className="overview-grid">
+                        <div className="overview-card">
+                            <div className="overview-title">Approved Channels</div>
+                            <div className="overview-number">{overviewStats.total}</div>
+                        </div>
+                        <div className="overview-card wide">
+                            <div className="overview-title">By Status</div>
+                            <div className="status-list">
+                                {Object.keys(overviewStats.statusMap).length === 0 ? (
+                                    <span className="status-item">No status data</span>
+                                ) : (
+                                    Object.entries(overviewStats.statusMap).map(([k, v]) => (
+                                        <span key={k} className="status-item">
+                      {k}: <b>{v}</b>
+                    </span>
+                                    ))
+                                )}
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
+                ) : filteredChannels.length > 0 ? (
+                    <div className="channels-table">
+                        <div className="table-header">
+                            <div className="table-cell">Channel Name</div>
+                            <div className="table-cell">Description</div>
+                            <div className="table-cell">Actions</div>
+                        </div>
+                        <div className="table-body">
+                            {filteredChannels.map((channel) => (
+                                <div className="table-row" key={channel.id ?? channel.channelId}>
+                                    <div className="table-cell">{channel.name}</div>
+                                    <div className="table-cell">{channel.description}</div>
+                                    <div className="table-cell">
+                                        <button
+                                            className="edit-btn"
+                                            onClick={() => handlePublishClick(channel)}
+                                        >
+                                            Publish
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    channels.length > 0 && (
+                        <p className="no-data">No matching channels</p>
+                    )
+                )
+            )}
 
             {showPublishModal && selectedChannel && (
                 <div className="edit-modal-overlay">
@@ -205,7 +312,11 @@ const PublishPost = () => {
                                 >
                                     {isSubmitting ? "Publishing..." : "Publish Post"}
                                 </button>
-                                <button type="button" className="cancel-btn" onClick={handleCancelPublish}>
+                                <button
+                                    type="button"
+                                    className="cancel-btn"
+                                    onClick={handleCancelPublish}
+                                >
                                     Cancel
                                 </button>
                             </div>

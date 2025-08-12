@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// AdminManageChannels.js
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/AdminManageChannelsCSS.css";
 
@@ -22,17 +23,32 @@ const AdminManageChannels = () => {
     const [messagesLoading, setMessagesLoading] = useState(false);
     const [messagesError, setMessagesError] = useState("");
 
+    // 顶部工具条
+    const [searchTerm, setSearchTerm] = useState("");
+    const [showOverview, setShowOverview] = useState(false);
+    const [showSearchBar, setShowSearchBar] = useState(true);
+
+    // 新增：页面加载状态
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState("");
+    const [loaded, setLoaded] = useState(false);
+
     useEffect(() => {
         fetchChannels();
     }, []);
 
     const fetchChannels = async () => {
+        setLoading(true);
+        setErr("");
         try {
             const res = await api.get("/api/channel/channels/getAll");
             setChannels(res.data || []);
         } catch (error) {
             console.error("Failed to fetch channels:", error?.response || error);
-            alert("Failed to fetch channels.");
+            setErr("Failed to fetch channels.");
+        } finally {
+            setLoading(false);
+            setLoaded(true);
         }
     };
 
@@ -88,53 +104,180 @@ const AdminManageChannels = () => {
         await fetchChannelMessages(selectedChannel.channelId);
     };
 
+    // ========= 计算（放在 return 之前，避免 hooks 顺序问题） =========
+
+    // 模糊搜索：id/name/description/status
+    const filteredChannels = useMemo(() => {
+        const q = (searchTerm || "").trim().toLowerCase();
+        if (!q) return channels;
+        return channels.filter((c) => {
+            const idStr = `${c.channelId ?? ""}`.toLowerCase();
+            const name = (c.name || "").toLowerCase();
+            const desc = (c.description || "").toLowerCase();
+            const status = (c.status || "").toLowerCase();
+            return (
+                idStr.includes(q) ||
+                name.includes(q) ||
+                desc.includes(q) ||
+                status.includes(q)
+            );
+        });
+    }, [channels, searchTerm]);
+
+    // Overview 统计
+    const overviewStats = useMemo(() => {
+        const total = channels.length;
+        const statusMap = {};
+        channels.forEach((c) => {
+            const s = (c.status || "Unknown").trim();
+            statusMap[s] = (statusMap[s] || 0) + 1;
+        });
+        return { total, statusMap };
+    }, [channels]);
+
+    // ===== 空状态（初始加载为空）—— 不显示工具条/表格 =====
+    if (!loading && !err && loaded && channels.length === 0) {
+        return (
+            <div className="admin-manage-channels-container">
+                <h2>Admin Manage Channels</h2>
+                <p className="no-channel">no channel</p>
+            </div>
+        );
+    }
+
     return (
         <div className="admin-manage-channels-container">
             <h2>Admin Manage Channels</h2>
-            <table className="channels-table">
-                <thead>
-                <tr>
-                    <th>Channel ID</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {channels.map((channel) => (
-                    <tr key={channel.channelId} onClick={() => handleRowClick(channel)}>
-                        <td>{channel.channelId}</td>
-                        <td>{channel.name}</td>
-                        <td>{channel.description}</td>
-                        <td>{channel.status}</td>
-                        <td>
-                            {channel.status !== "banned" ? (
-                                <button
-                                    className="ban-button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleBanChannel(channel.channelId);
-                                    }}
-                                >
-                                    Ban
-                                </button>
-                            ) : (
-                                <button
-                                    className="unban-button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleUnbanChannel(channel.channelId);
-                                    }}
-                                >
-                                    Unban
-                                </button>
-                            )}
-                        </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+
+            {/* 顶部提示条 */}
+            {loading && <div className="banner info">Loading...</div>}
+            {err && <div className="banner error">{err}</div>}
+
+            {/* 顶部工具条：只要初始非空（channels.length > 0），之后搜索为空也不隐藏 */}
+            {!loading && channels.length > 0 && (
+                <div className="channels-header">
+                    <div className="view-options">
+                        <button
+                            className={`overview-btn ${showOverview ? "active" : ""}`}
+                            onClick={() => setShowOverview(true)}
+                        >
+                            📊 Overview
+                        </button>
+                        <button
+                            className={`list-btn ${!showOverview ? "active" : ""}`}
+                            onClick={() => setShowOverview(false)}
+                        >
+                            📋 List
+                        </button>
+                    </div>
+
+                    <div className="search-wrap">
+                        {showSearchBar && (
+                            <input
+                                type="text"
+                                placeholder="Search by id / name / description / status..."
+                                className="search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        )}
+                        <button
+                            className="hide-btn"
+                            onClick={() => setShowSearchBar((v) => !v)}
+                            title={showSearchBar ? "Hide search bar" : "Show search bar"}
+                        >
+                            {showSearchBar ? "⨉Hide" : "Show"}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* 主区域：过滤后有结果才渲染表格（含表头）；否则仅提示，不渲染表头 */}
+            {!loading && !err && (
+                showOverview ? (
+                    <div className="overview-grid">
+                        <div className="overview-card">
+                            <div className="overview-title">Total Channels</div>
+                            <div className="overview-number">{overviewStats.total}</div>
+                        </div>
+                        <div className="overview-card wide">
+                            <div className="overview-title">By Status</div>
+                            <div className="badge-list">
+                                {Object.keys(overviewStats.statusMap).length === 0 ? (
+                                    <span className="badge">No status data</span>
+                                ) : (
+                                    Object.entries(overviewStats.statusMap).map(([k, v]) => (
+                                        <span key={k} className="badge">
+                      {k}: <b>{v}</b>
+                    </span>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ) : filteredChannels.length > 0 ? (
+                    <table className="channels-table">
+                        {/* 固定列宽，保证对齐 */}
+                        <colgroup>
+                            <col className="col-id" />
+                            <col className="col-name" />
+                            <col className="col-desc" />
+                            <col className="col-status" />
+                            <col className="col-actions" />
+                        </colgroup>
+
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {filteredChannels.map((channel) => (
+                            <tr
+                                key={channel.channelId}
+                                onClick={() => handleRowClick(channel)}
+                                className="table-not"
+                            >
+                                <td className="cell-id">{channel.channelId}</td>
+                                <td title={channel.name}>{channel.name}</td>
+                                <td title={channel.description}>{channel.description}</td>
+                                <td className="cell-status">{channel.status}</td>
+                                <td className="cell-actions">
+                                    {channel.status !== "banned" ? (
+                                        <button
+                                            className="ban-button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleBanChannel(channel.channelId);
+                                            }}
+                                        >
+                                            Ban
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="unban-button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleUnbanChannel(channel.channelId);
+                                            }}
+                                        >
+                                            Unban
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    channels.length > 0 && <p className="no-data">No matching channels</p>
+                )
+            )}
 
             {/* 详情弹窗 */}
             {showDetailsModal && selectedChannel && (
@@ -145,10 +288,7 @@ const AdminManageChannels = () => {
                     <div className="details-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="details-modal-header">
                             <h3>{selectedChannel.name}</h3>
-                            <button
-                                className="close-btn"
-                                onClick={() => setShowDetailsModal(false)}
-                            >
+                            <button className="close-btn" onClick={() => setShowDetailsModal(false)}>
                                 &times;
                             </button>
                         </div>
@@ -178,21 +318,15 @@ const AdminManageChannels = () => {
                     <div className="messages-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>
-                                Messages - Channel: {selectedChannel.name} (ID:{" "}
-                                {selectedChannel.channelId})
+                                Messages - Channel: {selectedChannel.name} (ID: {selectedChannel.channelId})
                             </h3>
-                            <button
-                                className="close-btn"
-                                onClick={() => setShowMessagesModal(false)}
-                            >
+                            <button className="close-btn" onClick={() => setShowMessagesModal(false)}>
                                 &times;
                             </button>
                         </div>
 
                         <div className="messages-content">
-                            {messagesLoading && (
-                                <div className="loading">Loading messages...</div>
-                            )}
+                            {messagesLoading && <div className="loading">Loading messages...</div>}
                             {messagesError && <div className="error-text">{messagesError}</div>}
                             {!messagesLoading && !messagesError && messages.length === 0 && (
                                 <div className="empty-text">No messages found.</div>
@@ -201,19 +335,10 @@ const AdminManageChannels = () => {
                                 <div className="messages-list">
                                     {messages.map((message) => (
                                         <div className="message-item" key={message.id}>
-                                            <p>
-                                                <strong>Title:</strong> {message.title}
-                                            </p>
-                                            <p>
-                                                <strong>Content:</strong> {message.content}
-                                            </p>
-                                            <p>
-                                                <strong>Posted At:</strong> {message.postedAt}
-                                            </p>
-                                            <p>
-                                                <strong>Status:</strong>{" "}
-                                                {message.isVisible ? "Visible" : "Hidden"}
-                                            </p>
+                                            <p><strong>Title:</strong> {message.title}</p>
+                                            <p><strong>Content:</strong> {message.content}</p>
+                                            <p><strong>Posted At:</strong> {message.postedAt}</p>
+                                            <p><strong>Status:</strong> {message.isVisible ? "Visible" : "Hidden"}</p>
                                             <hr />
                                         </div>
                                     ))}

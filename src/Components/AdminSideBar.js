@@ -116,7 +116,7 @@ export default function AdminSideBar() {
                     className={`nav-item ${isActive("/ManageChannelRequests") ? "active" : ""}`}
                 >
                     <i className="nav-icon">🚩</i>
-                    <span className="nav-text">Manage Channel Requests</span>
+                    <span className="nav-text">Manage Channel Report</span>
                 </Link>
 
                 <Link
@@ -124,7 +124,7 @@ export default function AdminSideBar() {
                     className={`nav-item ${isActive("/ManageChannelCreateRequest") ? "active" : ""}`}
                 >
                     <i className="nav-icon">📝</i>
-                    <span className="nav-text">Manage Channel Create Requests</span>
+                    <span className="nav-text">Manage Channel Requests</span>
                 </Link>
 
                 {/* >>> 新增：生成邀请码 <<< */}

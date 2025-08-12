@@ -1,4 +1,6 @@
 /* CreateChannelCSS.css */
+
+/* ===== Layout ===== */
 .create-channel-container {
     display: flex;
     justify-content: center;
@@ -9,9 +11,9 @@
 .create-channel-card {
     width: 100%;
     max-width: 420px;
-    background-color: white;
+    background-color: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
     padding: 2rem;
     text-align: left;
 }
@@ -20,25 +22,35 @@
     margin-bottom: 2rem;
 }
 
+/* ===== Form ===== */
 .form-group {
     margin-bottom: 1.5rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: .5rem;
     font-weight: 500;
+    color: #111;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
-    padding: 0.8rem;
+    padding: .8rem;
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 1rem;
+    box-sizing: border-box;
+    background: #fff;
 }
 
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* ===== Tag selection (inline pills) ===== */
 .tag-section {
     margin-bottom: 1.5rem;
 }
@@ -46,34 +58,43 @@
 .tag-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: .5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: .5rem;
+    background: #fff;
 }
 
 .selected-tag {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    padding: 0.3rem 0.8rem;
+    padding: .3rem .8rem;
     background-color: #f0f2f5;
     border-radius: 15px;
-    font-size: 0.9rem;
+    font-size: .9rem;
+    line-height: 1;
 }
 
 .remove-tag {
-    margin-left: 0.5rem;
+    margin-left: .5rem;
     background: none;
     border: none;
     color: #666;
     cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
 }
 
 .add-tag-btn {
     background-color: #f0f2f5;
     border: 1px dashed #ccc;
-    padding: 0.5rem;
+    padding: .5rem .8rem;
     border-radius: 5px;
     cursor: pointer;
+    color: #333;
 }
 
+/* ===== Actions (form footer) ===== */
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -82,52 +103,145 @@
 
 .create-btn {
     background-color: #4e6ef2;
-    color: white;
+    color: #fff;
     border: none;
-    padding: 0.8rem 1.5rem;
+    padding: .8rem 1.5rem;
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
 }
 
-/* Modal */
+.create-btn:hover {
+    background-color: #3d5af1;
+}
+
+/* ===== Tag Modal ===== */
 .tag-modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background-color: rgba(0,0,0,.5);
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1000;
 }
 
 .tag-modal {
-    background-color: white;
+    background-color: #fff;
     border-radius: 10px;
     padding: 1.5rem;
     width: 90%;
     max-width: 500px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
 }
 
 .tag-modal h3 {
     margin-bottom: 1rem;
     text-align: center;
+    color: #111;
 }
 
+/* ===== Search in Modal (NEW) ===== */
+.tag-search-row {
+    margin-bottom: 12px;
+}
+
+.tag-search-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+/* ===== No result hint + quick create (NEW) ===== */
+.no-result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff7e6;
+    border: 1px solid #ffe1b5;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 10px 0 8px;
+    font-size: 14px;
+    color: #8a5a00;
+}
+
+.add-new-tag-inline-btn {
+    background: #4e6ef2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+/* ===== Inline new-tag form (NEW) ===== */
+.add-new-tag-form {
+    border: 1px dashed #c9d1ff;
+    background: #f7f9ff;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.add-new-tag-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin-bottom: 8px;
+    background: #fff;
+}
+
+.add-new-tag-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.create-new-tag-btn,
+.cancel-new-tag-btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #d0d7de;
+    cursor: pointer;
+    background: #fff;
+    color: #111;
+}
+
+.create-new-tag-btn {
+    background: #4e6ef2;
+    color: #fff;
+    border: none;
+}
+
+.create-new-tag-btn.disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* ===== Tag list in Modal ===== */
 .tags-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 10px;
+    margin: 10px 0 16px;
 }
 
 .tag-item {
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
+    padding: 8px 16px;
     background-color: #f0f2f5;
+    border-radius: 20px;
     cursor: pointer;
+    user-select: none;
+}
+
+.tag-item:hover {
+    background-color: #e6eaff;
 }
 
 .tag-item.selected {
@@ -135,19 +249,7 @@
     color: #1890ff;
 }
 
-.modal-footer {
-    text-align: right;
-}
-
-.back-btn {
-    background-color: transparent;
-    border: 1px solid #ddd;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-/* Pagination controls */
+/* ===== Pagination (Modal) ===== */
 .pagination {
     display: flex;
     justify-content: center;
@@ -161,14 +263,29 @@
     border: none;
     font-size: 20px;
     cursor: pointer;
+    line-height: 1;
 }
 
 .page-btn:disabled {
     cursor: not-allowed;
-    opacity: 0.4;
+    opacity: .4;
 }
 
 .page-info {
     font-size: 14px;
     color: #666;
+}
+
+/* ===== Modal footer ===== */
+.modal-footer {
+    text-align: right;
+}
+
+.back-btn {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #111;
 }

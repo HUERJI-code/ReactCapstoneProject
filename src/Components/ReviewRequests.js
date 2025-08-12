@@ -14,6 +14,10 @@ const api = axios.create({
 
 const ReviewRequests = () => {
     const [reviewRequests, setReviewRequests] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [err, setErr] = useState("");
+    const [loaded, setLoaded] = useState(false);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,13 +26,24 @@ const ReviewRequests = () => {
     }, []);
 
     const fetchReviewRequests = async () => {
+        setLoading(true);
+        setErr("");
         try {
             const res = await api.get("/getOrganizerActivityRegisterRequest");
             setReviewRequests(res.data || []);
         } catch (error) {
             console.error("Failed to fetch review requests:", error?.response || error);
             if (error?.response?.status === 401) navigate("/OrganizerLogin");
-            else setReviewRequests([]); // 确保是空数组而不是 undefined
+            else return (
+                <div className="manage-activities-container">
+                    <h2>My Activities</h2>
+                    <p className="no-activity">no activity</p>
+                </div>
+            );
+            setReviewRequests([]); // 确保为空数组
+        } finally {
+            setLoading(false);
+            setLoaded(true);
         }
     };
 
@@ -45,11 +60,28 @@ const ReviewRequests = () => {
         }
     };
 
+    // 初始加载完成且为空：仅显示空提示（不显示表头/按钮）
+    if (!loading && !err && loaded && reviewRequests.length === 0) {
+        return (
+            <div className="review-requests-container">
+                <h2>Review User Activity Requests</h2>
+                <div className="no-activity" style={{ textAlign: "center" }}>
+                    No requests.
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="review-requests-container">
             <h2>Review User Activity Requests</h2>
 
-            {reviewRequests.length > 0 ? (
+            {/* 顶部提示条 */}
+            {loading && <div className="banner info">Loading...</div>}
+            {err && <div className="banner error">{err}</div>}
+
+            {/* 列表：仅在非加载且有数据时渲染（含表头与按钮） */}
+            {!loading && !err && reviewRequests.length > 0 && (
                 <div className="requests-table">
                     <div className="table-header">
                         <div className="table-cell">User</div>
@@ -61,8 +93,8 @@ const ReviewRequests = () => {
                     <div className="table-body">
                         {reviewRequests.map((request) => (
                             <div className="table-row" key={request.id}>
-                                <div className="table-cell">{request.user?.name}</div>
-                                <div className="table-cell">{request.activity?.title}</div>
+                                <div className="table-cell">{request.user?.name ?? "—"}</div>
+                                <div className="table-cell">{request.activity?.title ?? "—"}</div>
                                 <div className="table-cell">
                                     {(request.requestedAt || "").split("T")[0]}
                                 </div>
@@ -85,8 +117,6 @@ const ReviewRequests = () => {
                         ))}
                     </div>
                 </div>
-            ) : (
-                <div style={{ textAlign: "center" }} className="no-activity">No requests.</div>
             )}
         </div>
     );

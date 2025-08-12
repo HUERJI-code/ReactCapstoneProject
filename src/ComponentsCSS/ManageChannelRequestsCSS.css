@@ -1,12 +1,58 @@
+/* ManageChannelRequestsCSS.css */
 .manage-channel-requests-container {
     padding: 20px;
-    max-width: 1600px;
-    margin-left: 250px;
+    max-width: 1200px;
+    margin-left: 250px; /* 保持你的布局 */
 }
 
 .manage-channel-requests-container h2 {
     margin-bottom: 20px;
     color: #333;
+}
+
+/* 顶部工具条 */
+.requests-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.view-options {
+    display: flex;
+    gap: 10px;
+}
+
+.view-options button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.view-options button.active { background-color: #f0f2f5; }
+
+.search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 280px; /* 统一最小宽度 */
+}
+
+.hide-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 /* 顶部提示条 */
@@ -16,108 +62,121 @@
     margin-bottom: 12px;
     font-size: 14px;
 }
-.banner.info {
-    background-color: #eef3ff;
-}
-.banner.error {
-    background-color: #ffecec;
-    color: #b71c1c;
-}
-.banner.empty {
-    background-color: #f5f5f5;
-    color: #666;
+.banner.info { background-color: #eef3ff; }
+.banner.error { background-color: #ffecec; color: #b71c1c; }
+.banner.empty { background-color: #f5f5f5; color: #666; }
+
+/* Overview */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
 }
 
+.overview-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.overview-card.wide { grid-column: span 3; }
+
+.overview-title { font-size: 14px; color: #000; }
+.overview-number { font-size: 28px; font-weight: 700; color: #000; }
+
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 4px;
+}
+
+.badge {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #000;
+}
+.badge b { color: #000; font-weight: 700; }
+
+/* 表格（固定列宽 + 不错位） */
 .requests-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* 让长文本更好换行 */
+    table-layout: fixed; /* 配合 colgroup 固定列宽 */
+    border-spacing: 0;
 }
+
+.col-id { width: 10%; }
+.col-channel { width: 16%; }
+.col-reporter { width: 16%; }
+.col-status { width: 14%; }
+.col-date { width: 18%; }
+.col-actions { width: 26%; }
 
 .requests-table thead th {
     text-align: left;
-    padding: 6px 4px; /* 上下6px，左右4px */
+    padding: 10px 8px;
     background-color: #f9fafc;
     border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
     font-weight: 600;
 }
 
-.requests-table tbody td {
-    padding: 6px 4px; /* 上下6px，左右4px */
+.requests-table td {
+    padding: 10px 8px;
     border-bottom: 1px solid #e0e0e0;
     vertical-align: top;
-    word-wrap: break-word;
     word-break: break-word;
 }
 
-.requests-table {
-    border-spacing: 0; /* 去掉表格单元格之间的默认间距 */
+.table-empty {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+    padding: 16px 0;
 }
 
+.nowrap { white-space: nowrap; }
 
+/* 行交互 */
+.table-not { cursor: pointer; }
+.table-not:hover { background-color: #fafafa; }
 
-/* 原子按钮 */
-.approve-btn,
-.reject-btn {
-    padding: 6px 12px;
-    margin-left: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+/* 按钮 */
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.approve-btn,
-.reject-btn {
+.approve-btn, .reject-btn {
     display: inline-block;
-    min-width: 100px; /* 统一最小宽度，可根据需要调整 */
+    min-width: 100px;
     padding: 8px 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    text-align: center;
-    white-space: nowrap; /* 防止文字换行 */
+    white-space: nowrap;
     font-size: 14px;
+    text-align: center;
 }
 
-.approve-btn {
-    background-color: #4caf50;
-    color: white;
-}
-.approve-btn:hover {
-    background-color: #43a047;
-}
+.approve-btn { background-color: #4caf50; color: white; }
+.approve-btn:hover { background-color: #43a047; }
 
-.reject-btn {
-    background-color: #e53935;
-    color: #fff;
-}
-.reject-btn:hover {
-    background-color: #c62828;
-}
+.reject-btn { background-color: #e53935; color: #fff; }
+.reject-btn:hover { background-color: #c62828; }
 
-
-.actions-cell {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    min-width: 180px;
-}
-
-/* 原因列可换行并限制高度（可选） */
-.reason-cell {
-    max-height: 3.2em; /* 约两行 */
-    overflow: hidden;
-}
-
-/* 行可点击的轻微提示（可选） */
-.clickable-row {
-    cursor: pointer;
-}
-.clickable-row:hover {
-    background-color: #fafafa;
-}
-
-/* 详情弹窗样式 */
+/* 详情弹窗 */
 .report-details-modal-overlay {
     position: fixed;
     inset: 0;
@@ -154,9 +213,7 @@
     cursor: pointer;
     color: #555;
 }
-.report-details-modal .close-btn:hover {
-    color: #000;
-}
+.report-details-modal .close-btn:hover { color: #000; }
 
 .report-details-modal .modal-body {
     display: flex;
@@ -181,9 +238,8 @@
     flex: 1;
     color: #333;
 }
-.report-details-modal .kv.col {
-    flex-direction: column;
-}
+.report-details-modal .kv.col { flex-direction: column; }
+
 .report-details-modal .reason-box {
     width: 100%;
     padding: 10px 12px;
@@ -205,13 +261,7 @@
     margin-top: 16px;
 }
 
-/* 保持按钮等宽并单行显示（你之前的样式可复用） */
-.report-details-modal .approve-btn,
-.report-details-modal .reject-btn {
-    min-width: 100px;
-    white-space: nowrap;
-    text-align: center;
-}
+/* 空状态 */
 .no-data {
     margin-top: 20px;
     font-size: 16px;
@@ -220,3 +270,8 @@
     text-align: center;
 }
 
+/* 响应式 */
+@media (max-width: 768px) {
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-card.wide { grid-column: auto; }
+}
