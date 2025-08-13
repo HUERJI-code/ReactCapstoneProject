@@ -1,4 +1,3 @@
-// ManageActivityRequests.js
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/ManageActivityRequestsCSS.css";
@@ -23,6 +22,11 @@ const ManageActivityRequests = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showOverview, setShowOverview] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(true);
+
+    // 详情弹窗（与 ManageChannelRequests 统一风格）
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedActivity, setSelectedActivity] = useState(null);
+    const [loadingDetails, setLoadingDetails] = useState(false);
 
     useEffect(() => {
         fetchActivityRequests();
@@ -62,14 +66,30 @@ const ManageActivityRequests = () => {
         }
     };
 
+    // 点击行：根据 activityId 获取详情
+    const handleRowClick = async (activityId) => {
+        if (!activityId) return;
+        setShowDetailsModal(true);
+        setLoadingDetails(true);
+        setSelectedActivity(null);
+        try {
+            const res = await api.get(`/api/Activity/${activityId}`);
+            setSelectedActivity(res.data || null);
+        } catch (error) {
+            console.error("Failed to fetch activity details:", error?.response || error);
+            alert("Failed to load activity details.");
+            setShowDetailsModal(false);
+        } finally {
+            setLoadingDetails(false);
+        }
+    };
+
     // ========== 计算：搜索 + 统计 ==========
-    // 列表只展示“未处理”的（排除 approved / rejected）
     const pendingList = useMemo(
         () => (activityRequests || []).filter((r) => r.status !== "approved" && r.status !== "rejected"),
         [activityRequests]
     );
 
-    // 模糊搜索（Id/ActivityId/ReviewedById/RequestType/Status/日期）
     const filteredRequests = useMemo(() => {
         const q = (searchTerm || "").trim().toLowerCase();
         if (!q) return pendingList;
@@ -93,7 +113,6 @@ const ManageActivityRequests = () => {
         });
     }, [pendingList, searchTerm]);
 
-    // Overview 统计（基于全部请求）
     const overviewStats = useMemo(() => {
         const total = activityRequests.length;
         const statusMap = {};
@@ -104,7 +123,7 @@ const ManageActivityRequests = () => {
         return { total, statusMap, pending: pendingList.length };
     }, [activityRequests, pendingList]);
 
-    // ===== 早退：接口返回空数组（不显示按钮/搜索框/表头/表格）=====
+    // ===== 早退：空数组 =====
     if (!loading && !err && loaded && activityRequests.length === 0) {
         return (
             <div className="manage-activity-requests-container">
@@ -114,6 +133,9 @@ const ManageActivityRequests = () => {
         );
     }
 
+    // 辅助：格式化日期（尽量与后端返回保持简单展示）
+    const fmt = (val) => (val ? String(val).split(/[T ]/)[0] : "");
+
     return (
         <div className="manage-activity-requests-container">
             <h2>Manage Activity Requests</h2>
@@ -122,7 +144,7 @@ const ManageActivityRequests = () => {
             {loading && <div className="banner info">Loading...</div>}
             {err && <div className="banner error">{err}</div>}
 
-            {/* 顶部工具条：一旦“初始（pendingList）非空”，之后搜索为空也不隐藏 */}
+            {/* 顶部工具条 */}
             {!loading && pendingList.length > 0 && (
                 <div className="requests-header">
                     <div className="view-options">
@@ -164,7 +186,6 @@ const ManageActivityRequests = () => {
             {/* 主区域 */}
             {!loading && !err && (
                 showOverview ? (
-                    // 概览：当工具条可见时可切换到 Overview
                     <div className="overview-grid">
                         <div className="overview-card">
                             <div className="overview-title">Total</div>
@@ -182,15 +203,14 @@ const ManageActivityRequests = () => {
                                 ) : (
                                     Object.entries(overviewStats.statusMap).map(([k, v]) => (
                                         <span key={k} className="badge">
-                      {k}: <b>{v}</b>
-                    </span>
+                                            {k}: <b>{v}</b>
+                                        </span>
                                     ))
                                 )}
                             </div>
                         </div>
                     </div>
                 ) : filteredRequests.length > 0 ? (
-                    // 只有在过滤后有结果时才渲染表格（包含表头）
                     <table className="requests-table">
                         {/* 固定列宽，严格对齐 */}
                         <colgroup>
@@ -200,7 +220,6 @@ const ManageActivityRequests = () => {
                             <col className="col-type" />
                             <col className="col-status" />
                             <col className="col-date" />
-                            {/*<col className="col-date" />*/}
                             <col className="col-actions" />
                         </colgroup>
 
@@ -212,39 +231,36 @@ const ManageActivityRequests = () => {
                             <th>Request Type</th>
                             <th>Status</th>
                             <th>Requested At</th>
-                            {/*<th>Reviewed At</th>*/}
                             <th>Actions</th>
                         </tr>
                         </thead>
 
                         <tbody>
                         {filteredRequests.map((request) => (
-                            <tr key={request.id} className="table-not">
+                            <tr
+                                key={request.id}
+                                className="table-not"
+                                onClick={() => handleRowClick(request.activityId)}
+                            >
                                 <td>{request.id}</td>
                                 <td>{request.activityId}</td>
                                 <td>{request.reviewedById}</td>
                                 <td>{request.requestType}</td>
                                 <td className="nowrap">{request.status}</td>
-                                <td className="nowrap">{(request.requestedAt || "").split("T")[0]}</td>
-                                {/*<td className="nowrap">*/}
-                                {/*    {request.reviewedAt ? request.reviewedAt.split("T")[0] : "Not reviewed"}*/}
-                                {/*</td>*/}
-                                <td className="actions-cell nowrap">
+                                <td className="nowrap">{fmt(request.requestedAt)}</td>
+                                <td
+                                    className="actions-cell nowrap"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     <button
                                         className="approve-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleReview(request.id, "approved");
-                                        }}
+                                        onClick={() => handleReview(request.id, "approved")}
                                     >
                                         Approve
                                     </button>
                                     <button
                                         className="reject-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleReview(request.id, "rejected");
-                                        }}
+                                        onClick={() => handleReview(request.id, "rejected")}
                                     >
                                         Reject
                                     </button>
@@ -254,9 +270,92 @@ const ManageActivityRequests = () => {
                         </tbody>
                     </table>
                 ) : (
-                    // 有数据但搜索/过滤后为空：不渲染表头，仅提示；按钮仍保留（因基于 pendingList）
                     pendingList.length > 0 && <p className="no-data">No matching requests</p>
                 )
+            )}
+
+            {/* 详情弹窗（统一 report-details-modal 风格） */}
+            {showDetailsModal && (
+                <div className="report-details-modal-overlay" onClick={() => setShowDetailsModal(false)}>
+                    <div
+                        className="report-details-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-header">
+                            <h3>Activity Details</h3>
+                            <button
+                                className="close-btn"
+                                aria-label="Close"
+                                onClick={() => setShowDetailsModal(false)}
+                                title="Close"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            {loadingDetails ? (
+                                <div className="reason-box">Loading...</div>
+                            ) : selectedActivity ? (
+                                <>
+                                    <div className="kv">
+                                        <div className="k">Title</div>
+                                        <div className="v">{selectedActivity.title || "-"}</div>
+                                    </div>
+                                    <div className="kv">
+                                        <div className="k">Location</div>
+                                        <div className="v">{selectedActivity.location || "-"}</div>
+                                    </div>
+                                    <div className="kv">
+                                        <div className="k">Status</div>
+                                        <div className="v">{selectedActivity.status || "-"}</div>
+                                    </div>
+                                    <div className="kv">
+                                        <div className="k">Start Time</div>
+                                        <div className="v">{fmt(selectedActivity.startTime) || "-"}</div>
+                                    </div>
+                                    <div className="kv">
+                                        <div className="k">End Time</div>
+                                        <div className="v">{fmt(selectedActivity.endTime) || "-"}</div>
+                                    </div>
+                                    <div className="kv">
+                                        <div className="k">URL</div>
+                                        <div className="v">
+                                            {selectedActivity.url ? (
+                                                <a
+                                                    href={/^https?:\/\//i.test(selectedActivity.url) ? selectedActivity.url : `https://${selectedActivity.url}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    {selectedActivity.url}
+                                                </a>
+                                            ) : (
+                                                "-"
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="kv col">
+                                        <div className="k">Description</div>
+                                        <div className="reason-box">
+                                            {selectedActivity.description || "-"}
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="reason-box">No details found.</div>
+                            )}
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                className="back-btn"
+                                onClick={() => setShowDetailsModal(false)}
+                            >
+                                Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

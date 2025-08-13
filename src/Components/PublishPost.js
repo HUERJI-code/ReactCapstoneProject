@@ -3,10 +3,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/PublishPostCSS.css";
 
-// ===== 后端地址（云端域名；本地联调改成 https://localhost:7085）=====
 const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
 
-// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
 const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -29,7 +27,7 @@ const PublishPost = () => {
     const [showOverview, setShowOverview] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(true);
 
-    // 新增：loading / err
+    // loading / err
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
 
@@ -130,7 +128,7 @@ const PublishPost = () => {
         });
     }, [channels, searchTerm]);
 
-    // Overview 统计（channels 已经是 approved 列表）
+    // Overview 统计
     const overviewStats = useMemo(() => {
         const total = channels.length;
         const statusMap = {};
@@ -141,7 +139,7 @@ const PublishPost = () => {
         return { total, statusMap };
     }, [channels]);
 
-    // 空状态：加载完成且没有频道（不显示工具条）
+    // 空状态
     if (!loading && !err && loaded && channels.length === 0) {
         return (
             <div className="manage-channels-container">
@@ -155,11 +153,9 @@ const PublishPost = () => {
         <div className="manage-channels-container">
             <h2>Publish Posts</h2>
 
-            {/* 顶部提示条 */}
             {loading && <div className="banner info">Loading...</div>}
             {err && <div className="banner error">{err}</div>}
 
-            {/* 顶部工具条：只要初始非空（channels.length > 0），之后搜索为空也不隐藏 */}
             {!loading && channels.length > 0 && (
                 <div className="channels-header">
                     <div className="view-options">
@@ -197,7 +193,6 @@ const PublishPost = () => {
                 </div>
             )}
 
-            {/* 主区域：Overview 或 列表（列表表头仅在有结果时出现） */}
             {!loading && !err && (
                 showOverview ? (
                     <div className="overview-grid">
@@ -245,9 +240,7 @@ const PublishPost = () => {
                         </div>
                     </div>
                 ) : (
-                    channels.length > 0 && (
-                        <p className="no-data">No matching channels</p>
-                    )
+                    channels.length > 0 && <p className="no-data">No matching channels</p>
                 )
             )}
 
@@ -279,7 +272,8 @@ const PublishPost = () => {
                                 />
                             </div>
 
-                            <div className="form-group">
+                            {/* ✅ 合并为同一行并与复选框贴靠 */}
+                            <div className="form-group checkbox-inline">
                                 <label>
                                     <input
                                         type="checkbox"
@@ -287,11 +281,9 @@ const PublishPost = () => {
                                         checked={isPinned}
                                         onChange={handleCheckboxChange}
                                     />
-                                    Pin this post
+                                    <span>Pin this post</span>
                                 </label>
-                            </div>
 
-                            <div className="form-group">
                                 <label>
                                     <input
                                         type="checkbox"
@@ -299,7 +291,7 @@ const PublishPost = () => {
                                         checked={isVisible}
                                         onChange={handleCheckboxChange}
                                     />
-                                    Make this post visible
+                                    <span>Make this post visible</span>
                                 </label>
                             </div>
 

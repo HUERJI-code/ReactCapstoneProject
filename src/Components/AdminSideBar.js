@@ -70,10 +70,10 @@ export default function AdminSideBar() {
             </div>
 
             <div className="nav-items">
-                <Link to="/AdminDashboard" className={`nav-item ${isActive("/AdminDashboard") ? "active" : ""}`}>
-                    <i className="nav-icon">📊</i>
-                    <span className="nav-text">Dashboards</span>
-                </Link>
+                {/*<Link to="/AdminDashboard" className={`nav-item ${isActive("/AdminDashboard") ? "active" : ""}`}>*/}
+                {/*    <i className="nav-icon">📊</i>*/}
+                {/*    <span className="nav-text">Dashboards</span>*/}
+                {/*</Link>*/}
 
                 <Link to="/AdminInbox" className={`nav-item ${isActive("/AdminInbox") ? "active" : ""}`}>
                     <i className="nav-icon">✉️</i>

@@ -19,6 +19,11 @@ const ManageChannelRequests = () => {
     const [selectedReport, setSelectedReport] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
 
+    // 新增：频道详情
+    const [channelInfo, setChannelInfo] = useState(null);
+    const [loadingChannel, setLoadingChannel] = useState(false);
+    const [channelErr, setChannelErr] = useState("");
+
     // 顶部工具条
     const [searchTerm, setSearchTerm] = useState("");
     const [showOverview, setShowOverview] = useState(false);
@@ -71,9 +76,30 @@ const ManageChannelRequests = () => {
         }
     };
 
+    // 新增：获取频道详情
+    const fetchChannelInfo = async (channelId) => {
+        if (!channelId && channelId !== 0) return;
+        setLoadingChannel(true);
+        setChannelErr("");
+        setChannelInfo(null);
+        try {
+            // 如果你只想固定用 2 测试，把下面 params 改成 { channelId: 2 }
+            const res = await api.get("/channel/getChannelById", {
+                params: { channelId },
+            });
+            setChannelInfo(res.data || null);
+        } catch (e) {
+            console.error("Failed to fetch channel info:", e?.response || e);
+            setChannelErr("Failed to load channel info.");
+        } finally {
+            setLoadingChannel(false);
+        }
+    };
+
     const handleRowClick = (report) => {
         setSelectedReport(report);
         setShowDetailsModal(true);
+        fetchChannelInfo(report?.channelId); // 动态按行的 channelId 拉取
     };
 
     // 仅展示未处理（排除 approved / rejected）
@@ -114,7 +140,6 @@ const ManageChannelRequests = () => {
         return { total, pending, byStatus };
     }, [reports, pendingReports]);
 
-    // 空状态（接口返回空数组）
     // 空状态（无 pending request）
     if (!loading && !err && pendingReports.length === 0) {
         return (
@@ -124,7 +149,6 @@ const ManageChannelRequests = () => {
             </div>
         );
     }
-
 
     return (
         <div className="manage-channel-requests-container">
@@ -192,8 +216,8 @@ const ManageChannelRequests = () => {
                                 ) : (
                                     Object.entries(overviewStats.byStatus).map(([k, v]) => (
                                         <span className="badge" key={k}>
-                      {k}: <b>{v}</b>
-                    </span>
+                                            {k}: <b>{v}</b>
+                                        </span>
                                     ))
                                 )}
                             </div>
@@ -231,7 +255,7 @@ const ManageChannelRequests = () => {
                                 <td>{r.reportedById ?? "—"}</td>
                                 <td className="nowrap">{r.status}</td>
                                 <td className="nowrap">{fmtDate(r.reviewedAt)}</td>
-                                <td className="actions-cell nowrap">
+                                <td className="actions-cell nowrap" onClick={(e) => e.stopPropagation()}>
                                     <button
                                         className="approve-btn"
                                         onClick={(e) => handleReview(r.id, "approved", e)}
@@ -250,7 +274,6 @@ const ManageChannelRequests = () => {
                         </tbody>
                     </table>
                 ) : (
-                    // 有数据但过滤后为空：不渲染表头，仅提示；工具条仍显示（基于 pendingReports）
                     pendingReports.length > 0 && <p className="no-data">No matching reports</p>
                 )
             )}
@@ -277,6 +300,7 @@ const ManageChannelRequests = () => {
                         </div>
 
                         <div className="modal-body">
+                            {/* 原有 Report 基本信息 */}
                             <div className="kv">
                                 <span className="k">Id:</span>
                                 <span className="v">{selectedReport.id}</span>
@@ -293,23 +317,49 @@ const ManageChannelRequests = () => {
                                 <span className="k">Status:</span>
                                 <span className="v">{selectedReport.status}</span>
                             </div>
-                            <div className="kv">
-                                <span className="k">Created At:</span>
-                                <span className="v">{fmtDate(selectedReport.createdAt)}</span>
-                            </div>
-                            <div className="kv">
-                                <span className="k">Reviewed At:</span>
-                                <span className="v">{fmtDate(selectedReport.reviewedAt)}</span>
-                            </div>
-                            <div className="kv">
-                                <span className="k">Reviewed By:</span>
-                                <span className="v">{selectedReport.reviewedById ?? "—"}</span>
-                            </div>
-
                             <div className="kv col">
                                 <span className="k">Reason:</span>
                                 <div className="reason-box">
                                     {selectedReport.reason || "—"}
+                                </div>
+                            </div>
+
+                            {/* 新增：Channel 信息区域 */}
+                            <div className="kv col">
+                                <span className="k">Channel Info:</span>
+                                <div className="reason-box">
+                                    {loadingChannel ? (
+                                        "Loading channel info..."
+                                    ) : channelErr ? (
+                                        channelErr
+                                    ) : channelInfo ? (
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                            <div className="kv">
+                                                <span className="k">Name</span>
+                                                <span className="v">{channelInfo.name || "—"}</span>
+                                            </div>
+                                            <div className="kv col">
+                                                <span className="k">Description</span>
+                                                <div className="reason-box" style={{ marginTop: "6px" }}>
+                                                    {channelInfo.description || "—"}
+                                                </div>
+                                            </div>
+                                            <div className="kv">
+                                                <span className="k">URL</span>
+                                                <span className="v">
+                                                    {channelInfo.url ? (
+                                                        <a href={channelInfo.url} target="_blank" rel="noreferrer">
+                                                            {channelInfo.url}
+                                                        </a>
+                                                    ) : (
+                                                        "—"
+                                                    )}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        "No channel info."
+                                    )}
                                 </div>
                             </div>
                         </div>

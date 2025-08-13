@@ -3,10 +3,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "../ComponentsCSS/ManageActivitiesCSS.css";
 
-// ===== 后端地址（云端域名，按需改成本地 https://localhost:7085）=====
 const API_BASE_URL = "https://adproject-webapp.azurewebsites.net";
 
-// 统一 axios 实例：自动拼前缀 + 携带 Cookie（Session）
 const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -128,7 +126,7 @@ const ManageActivities = () => {
         setSelectedTags([]);
     };
 
-    // === 新增：取消活动（列表行上的 Cancel 按钮） ===
+    // 取消活动
     const handleCancelActivity = async (activity) => {
         const title = activity?.title || "";
         const id = activity?.activityId;
@@ -139,11 +137,8 @@ const ManageActivities = () => {
 
         try {
             setCancelingId(id);
-            // 按你的要求：将 activityId 发送到 /cancelChannel?channelId=活动ID
-            // 使用 POST（如果你的后端规定用 GET，则把 post 改成 get 即可）
             await api.delete(`/cancleActivity?activityId=${id}`);
             alert("Cancelled successfully.");
-            // 取消后刷新列表
             fetchActivities();
         } catch (error) {
             console.error("Failed to cancel activity:", error?.response || error);
@@ -152,8 +147,6 @@ const ManageActivities = () => {
             setCancelingId(null);
         }
     };
-
-    // —— 把 Hooks（useMemo）放在任何 return 之前 —— //
 
     // 模糊搜索（title/location/status/date(yyyy/mm/dd)）
     const filteredActivities = useMemo(() => {
@@ -200,7 +193,7 @@ const ManageActivities = () => {
     const startIdx = (currentPage - 1) * tagsPerPage;
     const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
 
-    // ====== 空状态：初始加载无任何活动（不显示工具条/列表） ======
+    // 空状态
     if (!loading && !err && loaded && activities.length === 0) {
         return (
             <div className="manage-activities-container">
@@ -214,11 +207,9 @@ const ManageActivities = () => {
         <div className="manage-activities-container">
             <h2>My Activities</h2>
 
-            {/* 顶部提示条 */}
             {loading && <div className="banner info">Loading...</div>}
             {err && <div className="banner error">{err}</div>}
 
-            {/* 顶部工具条：只要初始非空（activities.length > 0），之后搜索为空也不隐藏 */}
             {!loading && activities.length > 0 && (
                 <div className="activities-header">
                     <div className="view-options">
@@ -257,7 +248,7 @@ const ManageActivities = () => {
                 </div>
             )}
 
-            {/* 主体：Overview 或 列表（列表表头仅在有结果时出现） */}
+            {/* —— 列表区：使用与 ManageChannel 一致的“flex 表格”表现 —— */}
             {!loading && !err && (
                 showOverview ? (
                     <div className="overview-grid">

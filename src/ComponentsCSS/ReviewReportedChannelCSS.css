@@ -1,8 +1,8 @@
 /* ReviewChannelMessagesCSS.css */
 .review-channel-messages-container {
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 1600px;
+    margin-left: 250px;
 }
 
 h2 {

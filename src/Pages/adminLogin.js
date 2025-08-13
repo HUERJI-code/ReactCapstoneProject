@@ -43,7 +43,7 @@ export default function AdminLogin() {
             if (res.status === 200) {
                 if (res.data?.userType === "admin") {
                     alert("Admin Login successfully!");
-                    navigate("/AdminDashboard");
+                    navigate("/AdminInbox");
                 } else {
                     alert("Login failed. Your account is not authorized as an admin.");
                 }

@@ -45,7 +45,7 @@ export default function LoginOrganizer() {
             if (res.status === 200) {
                 if (res.data?.userType === "organizer") {
                     alert("Login successfully!");
-                    navigate("/Dashboard");
+                    navigate("/inbox");
                 } else {
                     alert("Login UserType must be organizer!");
                 }

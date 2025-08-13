@@ -73,10 +73,10 @@ const Sidebar = () => {
             </div>
 
             <div className="nav-items">
-                <Link to="/Dashboard" className={`nav-item ${isActive("/Dashboard") ? "active" : ""}`}>
-                    <i className="nav-icon">📊</i>
-                    <span className="nav-text">Dashboards</span>
-                </Link>
+                {/*<Link to="/Dashboard" className={`nav-item ${isActive("/Dashboard") ? "active" : ""}`}>*/}
+                {/*    <i className="nav-icon">📊</i>*/}
+                {/*    <span className="nav-text">Dashboards</span>*/}
+                {/*</Link>*/}
 
                 <Link to="/inbox" className={`nav-item ${isActive("/inbox") ? "active" : ""}`}>
                     <i className="nav-icon">✉️</i>

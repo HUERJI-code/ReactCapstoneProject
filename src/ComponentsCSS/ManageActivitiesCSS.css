@@ -1,8 +1,8 @@
 /* ManageActivitiesCSS.css */
 .manage-activities-container {
     padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 1600px;
+    margin-left: 250px;
 }
 
 h2 {
@@ -45,7 +45,7 @@ h2 {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    min-width: 280px;
+    max-width: 280px; /* 与 ManageChannel 保持一致 */
 }
 
 .hide-btn {
@@ -56,6 +56,17 @@ h2 {
     cursor: pointer;
 }
 
+/* 顶部提示条（与其它页面统一） */
+.banner {
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+.banner.info  { background-color: #eef3ff; }
+.banner.error { background-color: #ffecec; color: #b71c1c; }
+.banner.empty { background-color: #f5f5f5; color: #666; }
+
 /* Overview */
 .overview-grid {
     display: grid;
@@ -63,7 +74,6 @@ h2 {
     gap: 14px;
     margin-bottom: 12px;
 }
-
 .overview-card {
     background: #fff;
     border: 1px solid #e5e7eb;
@@ -74,21 +84,10 @@ h2 {
     flex-direction: column;
     gap: 6px;
 }
+.overview-card.wide { grid-column: span 3; }
 
-.overview-card.wide {
-    grid-column: span 3;
-}
-
-.overview-title {
-    font-size: 14px;
-    color: #6b7280;
-}
-
-.overview-number {
-    font-size: 28px;
-    font-weight: 700;
-    color: #111827;
-}
+.overview-title  { font-size: 14px; color: #6b7280; }
+.overview-number { font-size: 28px; font-weight: 700; color: #111827; }
 
 .status-list {
     display: flex;
@@ -96,7 +95,6 @@ h2 {
     gap: 8px 12px;
     margin-top: 4px;
 }
-
 .status-item {
     background: #f3f4f6;
     border: 1px solid #e5e7eb;
@@ -106,9 +104,13 @@ h2 {
     color: #374151;
 }
 
-/* Table */
+/* ===== 表格区：对齐 ManageChannel 的 flex 风格 ===== */
 .activities-table {
     width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
 }
 
 .table-header {
@@ -143,7 +145,7 @@ h2 {
     font-style: italic;
 }
 
-/* Buttons */
+/* Buttons（与 ManageChannel 同色：绿色/红色） */
 .edit-btn,
 .cancel-btn {
     padding: 6px 12px;
@@ -151,16 +153,15 @@ h2 {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    color: #fff;
 }
 
 .edit-btn {
-    background-color: #4e6ef2;
-    color: white;
+    background-color: #4CAF50; /* 绿色，和 ManageChannel 一致 */
 }
 
 .cancel-btn {
-    background-color: #f0f2f5;
-    color: #333;
+    background-color: #f44336; /* 红色，和 ManageChannel 一致 */
 }
 
 /* Edit modal */
@@ -211,9 +212,7 @@ textarea {
     resize: vertical;
 }
 
-.tag-section {
-    margin-bottom: 20px;
-}
+.tag-section { margin-bottom: 20px; }
 
 .tag-container {
     display: flex;
@@ -270,10 +269,7 @@ textarea {
     padding: 24px;
 }
 
-.tag-modal h3 {
-    margin-bottom: 20px;
-    text-align: center;
-}
+.tag-modal h3 { margin-bottom: 20px; text-align: center; }
 
 .tags-container {
     display: flex;
@@ -288,11 +284,7 @@ textarea {
     border-radius: 20px;
     cursor: pointer;
 }
-
-.tag-item:hover {
-    background-color: #e6eaff;
-}
-
+.tag-item:hover   { background-color: #e6eaff; }
 .tag-item.selected {
     background-color: #d4e6ff;
     color: #1890ff;
@@ -306,27 +298,16 @@ textarea {
     gap: 12px;
     margin-bottom: 16px;
 }
-
 .page-btn {
     background: none;
     border: none;
     font-size: 20px;
     cursor: pointer;
 }
+.page-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.page-info { font-size: 14px; color: #666; }
 
-.page-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-}
-
-.page-info {
-    font-size: 14px;
-    color: #666;
-}
-
-.modal-footer {
-    text-align: right;
-}
+.modal-footer { text-align: right; }
 
 .back-btn {
     background-color: transparent;
@@ -362,10 +343,6 @@ textarea {
 
 /* 响应式优化 */
 @media (max-width: 768px) {
-    .overview-grid {
-        grid-template-columns: 1fr;
-    }
-    .overview-card.wide {
-        grid-column: auto;
-    }
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-card.wide { grid-column: auto; }
 }

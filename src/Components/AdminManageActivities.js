@@ -71,6 +71,9 @@ const AdminManageActivities = () => {
         setShowDetailsModal(true);
     };
 
+    // 工具：格式化日期（yyyy-mm-dd）
+    const fmtDate = (val) => (val ? String(val).split(/[ T]/)[0] : "");
+
     // 模糊搜索：title/location/status/date(yyyy/mm/dd)
     const filteredActivities = useMemo(() => {
         const q = (searchTerm || "").trim().toLowerCase();
@@ -79,7 +82,7 @@ const AdminManageActivities = () => {
             const title = (a.title || "").toLowerCase();
             const location = (a.location || "").toLowerCase();
             const status = (a.status || "").toLowerCase();
-            const dateStr = ((a.startTime || "").split(" ")[0] || "").toLowerCase();
+            const dateStr = fmtDate(a.startTime).toLowerCase();
             return (
                 title.includes(q) ||
                 location.includes(q) ||
@@ -172,8 +175,8 @@ const AdminManageActivities = () => {
                                 ) : (
                                     Object.entries(overviewStats.statusMap).map(([k, v]) => (
                                         <span key={k} className="status-item">
-                      {k}: <b>{v}</b>
-                    </span>
+                                            {k}: <b>{v}</b>
+                                        </span>
                                     ))
                                 )}
                             </div>
@@ -193,7 +196,7 @@ const AdminManageActivities = () => {
 
                         <thead>
                         <tr>
-                            <th>Activity ID</th>
+                            <th>ID</th>
                             <th>Title</th>
                             <th>Location</th>
                             <th>Date</th>
@@ -212,9 +215,9 @@ const AdminManageActivities = () => {
                                 <td>{activity.activityId}</td>
                                 <td title={activity.title}>{activity.title}</td>
                                 <td title={activity.location}>{activity.location}</td>
-                                <td>{(activity.startTime || "").split(" ")[0]}</td>
-                                <td>{activity.status}</td>
-                                <td>
+                                <td className="nowrap">{fmtDate(activity.startTime)}</td>
+                                <td className="nowrap">{activity.status}</td>
+                                <td className="actions-cell nowrap">
                                     {activity.status !== "banned" ? (
                                         <button
                                             className="ban-button"
@@ -248,30 +251,81 @@ const AdminManageActivities = () => {
                 )
             )}
 
+            {/* 统一风格：report-details-modal */}
             {showDetailsModal && selectedActivity && (
-                <div className="details-modal-overlay">
-                    <div className="details-modal">
-                        <h3>{selectedActivity.title}</h3>
-                        <p>
-                            <strong>Location:</strong> {selectedActivity.location}
-                        </p>
-                        <p>
-                            <strong>Date:</strong>{" "}
-                            {(selectedActivity.startTime || "").split(" ")[0]}
-                        </p>
-                        <p>
-                            <strong>Description:</strong> {selectedActivity.description}
-                        </p>
-                        <p>
-                            <strong>StartTime:</strong> {selectedActivity.startTime}
-                        </p>
-                        <p>
-                            <strong>EndTime:</strong> {selectedActivity.endTime}
-                        </p>
-                        <p>
-                            <strong>Status:</strong> {selectedActivity.status}
-                        </p>
-                        <button onClick={() => setShowDetailsModal(false)}>Close</button>
+                <div
+                    className="report-details-modal-overlay"
+                    onClick={() => setShowDetailsModal(false)}
+                >
+                    <div
+                        className="report-details-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-header">
+                            <h3>Activity Details</h3>
+                            <button
+                                className="close-btn"
+                                aria-label="Close"
+                                onClick={() => setShowDetailsModal(false)}
+                                title="Close"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="kv">
+                                <div className="k">Activity ID</div>
+                                <div className="v">{selectedActivity.activityId}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">Title</div>
+                                <div className="v">{selectedActivity.title || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">Location</div>
+                                <div className="v">{selectedActivity.location || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">Status</div>
+                                <div className="v">{selectedActivity.status || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">Start Time</div>
+                                <div className="v">{selectedActivity.startTime || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">End Time</div>
+                                <div className="v">{selectedActivity.endTime || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">URL</div>
+                                <div className="v">
+                                    {selectedActivity.url ? (
+                                        <a href={selectedActivity.url} target="_blank" rel="noreferrer">
+                                            {selectedActivity.url}
+                                        </a>
+                                    ) : (
+                                        "-"
+                                    )}
+                                </div>
+                            </div>
+                            <div className="kv col">
+                                <div className="k">Description</div>
+                                <div className="reason-box">
+                                    {selectedActivity.description || "-"}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                className="back-btn"
+                                onClick={() => setShowDetailsModal(false)}
+                            >
+                                Back
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
