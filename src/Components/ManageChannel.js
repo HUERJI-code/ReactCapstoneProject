@@ -274,17 +274,25 @@ const ManageChannel = () => {
                                         <div className="table-cell">{ch.description}</div>
                                         <div className="table-cell">{ch.status}</div>
                                         <div className="table-cell">
-                                            <button className="edit-btn" onClick={() => handleEditClick(ch)}>
-                                                Edit
-                                            </button>
-                                            <button
-                                                className="cancel-btn"
-                                                onClick={() => handleCancelChannel(ch)}
-                                                disabled={cancelingId === id}
-                                                title="Cancel this channel"
-                                            >
-                                                {cancelingId === id ? "Cancelling..." : "Cancel"}
-                                            </button>
+                                            {ch.status?.toLowerCase() !== "cancelled" &&
+                                                ch.status?.toLowerCase() !== "banned" && (
+                                                    <>
+                                                        <button
+                                                            className="edit-btn"
+                                                            onClick={() => handleEditClick(ch)}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            className="cancel-btn"
+                                                            onClick={() => handleCancelChannel(ch)}
+                                                            disabled={cancelingId === id}
+                                                            title="Cancel this channel"
+                                                        >
+                                                            {cancelingId === id ? "Cancelling..." : "Cancel"}
+                                                        </button>
+                                                    </>
+                                                )}
                                         </div>
                                     </div>
                                 );

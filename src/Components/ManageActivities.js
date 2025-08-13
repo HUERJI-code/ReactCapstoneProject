@@ -148,7 +148,7 @@ const ManageActivities = () => {
         }
     };
 
-    // 模糊搜索（title/location/status/date(yyyy/mm/dd)）
+    // 模糊搜索
     const filteredActivities = useMemo(() => {
         const q = (searchTerm || "").trim().toLowerCase();
         if (!q) return activities;
@@ -248,7 +248,6 @@ const ManageActivities = () => {
                 </div>
             )}
 
-            {/* —— 列表区：使用与 ManageChannel 一致的“flex 表格”表现 —— */}
             {!loading && !err && (
                 showOverview ? (
                     <div className="overview-grid">
@@ -299,20 +298,27 @@ const ManageActivities = () => {
                                     </div>
                                     <div className="table-cell">{activity.status}</div>
                                     <div className="table-cell">
-                                        <button
-                                            className="edit-btn"
-                                            onClick={() => handleEditClick(activity)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            className="cancel-btn"
-                                            onClick={() => handleCancelActivity(activity)}
-                                            disabled={cancelingId === activity.activityId}
-                                            title="Cancel this activity"
-                                        >
-                                            {cancelingId === activity.activityId ? "Cancelling..." : "Cancel"}
-                                        </button>
+                                        {activity.status?.toLowerCase() !== "cancelled" &&
+                                            activity.status?.toLowerCase() !== "banned" && (
+                                                <>
+                                                    <button
+                                                        className="edit-btn"
+                                                        onClick={() => handleEditClick(activity)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="cancel-btn"
+                                                        onClick={() => handleCancelActivity(activity)}
+                                                        disabled={cancelingId === activity.activityId}
+                                                        title="Cancel this activity"
+                                                    >
+                                                        {cancelingId === activity.activityId
+                                                            ? "Cancelling..."
+                                                            : "Cancel"}
+                                                    </button>
+                                                </>
+                                            )}
                                     </div>
                                 </div>
                             ))}
