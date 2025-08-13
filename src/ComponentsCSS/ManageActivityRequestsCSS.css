@@ -109,9 +109,9 @@ h2 {
 .col-activity { width: 12%; }
 .col-reviewer { width: 12%; }
 .col-type { width: 14%; }
-.col-status { width: 12%; }
+.col-status { width: 8%; }
 .col-date { width: 14%; }
-.col-actions { width: 14%; }
+.col-actions { width: 24%; }
 
 .requests-table thead th {
     text-align: left;

@@ -200,7 +200,7 @@ const ManageActivityRequests = () => {
                             <col className="col-type" />
                             <col className="col-status" />
                             <col className="col-date" />
-                            <col className="col-date" />
+                            {/*<col className="col-date" />*/}
                             <col className="col-actions" />
                         </colgroup>
 
@@ -212,7 +212,7 @@ const ManageActivityRequests = () => {
                             <th>Request Type</th>
                             <th>Status</th>
                             <th>Requested At</th>
-                            <th>Reviewed At</th>
+                            {/*<th>Reviewed At</th>*/}
                             <th>Actions</th>
                         </tr>
                         </thead>
@@ -226,9 +226,9 @@ const ManageActivityRequests = () => {
                                 <td>{request.requestType}</td>
                                 <td className="nowrap">{request.status}</td>
                                 <td className="nowrap">{(request.requestedAt || "").split("T")[0]}</td>
-                                <td className="nowrap">
-                                    {request.reviewedAt ? request.reviewedAt.split("T")[0] : "Not reviewed"}
-                                </td>
+                                {/*<td className="nowrap">*/}
+                                {/*    {request.reviewedAt ? request.reviewedAt.split("T")[0] : "Not reviewed"}*/}
+                                {/*</td>*/}
                                 <td className="actions-cell nowrap">
                                     <button
                                         className="approve-btn"

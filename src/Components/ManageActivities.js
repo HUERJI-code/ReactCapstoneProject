@@ -36,6 +36,9 @@ const ManageActivities = () => {
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
 
+    // 新增：正在取消的 activityId
+    const [cancelingId, setCancelingId] = useState(null);
+
     useEffect(() => {
         fetchActivities();
         fetchAllTags();
@@ -123,6 +126,31 @@ const ManageActivities = () => {
         setShowEditModal(false);
         setEditingActivity(null);
         setSelectedTags([]);
+    };
+
+    // === 新增：取消活动（列表行上的 Cancel 按钮） ===
+    const handleCancelActivity = async (activity) => {
+        const title = activity?.title || "";
+        const id = activity?.activityId;
+        if (!id) return;
+
+        const ok = window.confirm(`are you sure to cancel activity : ${title}`);
+        if (!ok) return;
+
+        try {
+            setCancelingId(id);
+            // 按你的要求：将 activityId 发送到 /cancelChannel?channelId=活动ID
+            // 使用 POST（如果你的后端规定用 GET，则把 post 改成 get 即可）
+            await api.delete(`/cancleActivity?activityId=${id}`);
+            alert("Cancelled successfully.");
+            // 取消后刷新列表
+            fetchActivities();
+        } catch (error) {
+            console.error("Failed to cancel activity:", error?.response || error);
+            alert("Failed to cancel activity. Please try again.");
+        } finally {
+            setCancelingId(null);
+        }
     };
 
     // —— 把 Hooks（useMemo）放在任何 return 之前 —— //
@@ -253,8 +281,8 @@ const ManageActivities = () => {
                                 ) : (
                                     Object.entries(overviewStats.statusMap).map(([k, v]) => (
                                         <span key={k} className="status-item">
-                      {k}: <b>{v}</b>
-                    </span>
+                                            {k}: <b>{v}</b>
+                                        </span>
                                     ))
                                 )}
                             </div>
@@ -286,7 +314,14 @@ const ManageActivities = () => {
                                         >
                                             Edit
                                         </button>
-                                        <button className="cancel-btn">Cancel</button>
+                                        <button
+                                            className="cancel-btn"
+                                            onClick={() => handleCancelActivity(activity)}
+                                            disabled={cancelingId === activity.activityId}
+                                            title="Cancel this activity"
+                                        >
+                                            {cancelingId === activity.activityId ? "Cancelling..." : "Cancel"}
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -404,15 +439,15 @@ const ManageActivities = () => {
                                 <div className="tag-container">
                                     {selectedTags.map((tag) => (
                                         <span key={tag.tagId} className="selected-tag">
-                      {tag.name}
+                                            {tag.name}
                                             <button
                                                 type="button"
                                                 className="remove-tag"
                                                 onClick={() => handleTagRemove(tag.tagId)}
                                             >
-                        ×
-                      </button>
-                    </span>
+                                                ×
+                                            </button>
+                                        </span>
                                     ))}
                                     <button
                                         type="button"
@@ -458,8 +493,8 @@ const ManageActivities = () => {
                                                     ‹
                                                 </button>
                                                 <span className="page-info">
-                          Page {currentPage} / {totalPages}
-                        </span>
+                                                    Page {currentPage} / {totalPages}
+                                                </span>
                                                 <button
                                                     type="button"
                                                     className="page-btn"

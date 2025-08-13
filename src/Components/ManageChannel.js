@@ -34,6 +34,9 @@ const ManageChannel = () => {
     const [showOverview, setShowOverview] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(true);
 
+    // 正在取消中的 channelId（用于禁用按钮）
+    const [cancelingId, setCancelingId] = useState(null);
+
     useEffect(() => {
         fetchChannels();
         fetchAllTags();
@@ -115,6 +118,29 @@ const ManageChannel = () => {
         setShowEditModal(false);
         setEditingChannel(null);
         setSelectedTags([]);
+    };
+
+    // === 新增：取消频道（列表行 Cancel 按钮）===
+    const handleCancelChannel = async (ch) => {
+        const title = ch?.name || "";
+        const id = ch?.channelId ?? ch?.id; // 兼容两种字段
+        if (!id) return;
+
+        const ok = window.confirm(`are you sure to cancel channel : ${title}`);
+        if (!ok) return;
+
+        try {
+            setCancelingId(id);
+            // 调用 /cancelChannel?channelId=<id>
+            await api.delete(`/cancelChannel?channelId=${id}`);
+            alert("Cancelled successfully.");
+            fetchChannels();
+        } catch (error) {
+            console.error("Failed to cancel channel:", error?.response || error);
+            alert("Failed to cancel channel. Please try again.");
+        } finally {
+            setCancelingId(null);
+        }
     };
 
     // Slice tags for current page
@@ -222,8 +248,8 @@ const ManageChannel = () => {
                                 ) : (
                                     Object.entries(overviewStats.statusMap).map(([k, v]) => (
                                         <span key={k} className="status-item">
-                      {k}: <b>{v}</b>
-                    </span>
+                                            {k}: <b>{v}</b>
+                                        </span>
                                     ))
                                 )}
                             </div>
@@ -233,26 +259,36 @@ const ManageChannel = () => {
                     <div className="channels-table">
                         <div className="table-header">
                             <div className="table-cell">Channel Name</div>
-                            <div className="table-cell">URL</div>
+                            {/*<div className="table-cell">URL</div>*/}
                             <div className="table-cell">Description</div>
                             <div className="table-cell">Status</div>
                             <div className="table-cell">Actions</div>
                         </div>
                         <div className="table-body">
-                            {filteredChannels.map((ch) => (
-                                <div className="table-row" key={ch.id}>
-                                    <div className="table-cell">{ch.name}</div>
-                                    <div className="table-cell">{ch.url}</div>
-                                    <div className="table-cell">{ch.description}</div>
-                                    <div className="table-cell">{ch.status}</div>
-                                    <div className="table-cell">
-                                        <button className="edit-btn" onClick={() => handleEditClick(ch)}>
-                                            Edit
-                                        </button>
-                                        <button className="cancel-btn">Cancel</button>
+                            {filteredChannels.map((ch) => {
+                                const id = ch?.channelId ?? ch?.id;
+                                return (
+                                    <div className="table-row" key={id}>
+                                        <div className="table-cell">{ch.name}</div>
+                                        {/*<div className="table-cell">{ch.url}</div>*/}
+                                        <div className="table-cell">{ch.description}</div>
+                                        <div className="table-cell">{ch.status}</div>
+                                        <div className="table-cell">
+                                            <button className="edit-btn" onClick={() => handleEditClick(ch)}>
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="cancel-btn"
+                                                onClick={() => handleCancelChannel(ch)}
+                                                disabled={cancelingId === id}
+                                                title="Cancel this channel"
+                                            >
+                                                {cancelingId === id ? "Cancelling..." : "Cancel"}
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 ) : (
@@ -307,15 +343,15 @@ const ManageChannel = () => {
                                 <div className="tag-container">
                                     {selectedTags.map((tag) => (
                                         <span key={tag.tagId} className="selected-tag">
-                      {tag.name}
+                                            {tag.name}
                                             <button
                                                 type="button"
                                                 className="remove-tag"
                                                 onClick={() => handleTagRemove(tag.tagId)}
                                             >
-                        ×
-                      </button>
-                    </span>
+                                                ×
+                                            </button>
+                                        </span>
                                     ))}
                                     <button
                                         type="button"
@@ -357,8 +393,8 @@ const ManageChannel = () => {
                                                     ‹
                                                 </button>
                                                 <span className="page-info">
-                          Page {currentPage} / {totalPages}
-                        </span>
+                                                    Page {currentPage} / {totalPages}
+                                                </span>
                                                 <button
                                                     type="button"
                                                     className="page-btn"
