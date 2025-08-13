@@ -28,13 +28,14 @@ const AdminManageChannels = () => {
     const [showOverview, setShowOverview] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(true);
 
-    // 新增：页面加载状态
+    // 页面加载状态
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState("");
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         fetchChannels();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchChannels = async () => {
@@ -103,8 +104,6 @@ const AdminManageChannels = () => {
         setShowMessagesModal(true);
         await fetchChannelMessages(selectedChannel.channelId);
     };
-
-    // ========= 计算（放在 return 之前，避免 hooks 顺序问题） =========
 
     // 模糊搜索：id/name/description/status
     const filteredChannels = useMemo(() => {
@@ -208,8 +207,8 @@ const AdminManageChannels = () => {
                                 ) : (
                                     Object.entries(overviewStats.statusMap).map(([k, v]) => (
                                         <span key={k} className="badge">
-                      {k}: <b>{v}</b>
-                    </span>
+                                            {k}: <b>{v}</b>
+                                        </span>
                                     ))
                                 )}
                             </div>
@@ -279,28 +278,70 @@ const AdminManageChannels = () => {
                 )
             )}
 
-            {/* 详情弹窗 */}
+            {/* 详情弹窗（已统一为 report-details-modal 风格，并追加 URL） */}
             {showDetailsModal && selectedChannel && (
                 <div
-                    className="details-modal-overlay"
+                    className="report-details-modal-overlay"
                     onClick={() => setShowDetailsModal(false)}
                 >
-                    <div className="details-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="details-modal-header">
-                            <h3>{selectedChannel.name}</h3>
-                            <button className="close-btn" onClick={() => setShowDetailsModal(false)}>
-                                &times;
+                    <div
+                        className="report-details-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="modal-header">
+                            <h3>Channel Details</h3>
+                            <button
+                                className="close-btn"
+                                aria-label="Close"
+                                onClick={() => setShowDetailsModal(false)}
+                                title="Close"
+                            >
+                                ×
                             </button>
                         </div>
-                        <div className="details-modal-body">
-                            <p>
-                                <strong>Description:</strong> {selectedChannel.description}
-                            </p>
-                            <p>
-                                <strong>Status:</strong> {selectedChannel.status}
-                            </p>
+
+                        <div className="modal-body">
+                            <div className="kv">
+                                <div className="k">Channel ID</div>
+                                <div className="v">{selectedChannel.channelId}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">Name</div>
+                                <div className="v">{selectedChannel.name || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">Status</div>
+                                <div className="v">{selectedChannel.status || "-"}</div>
+                            </div>
+                            <div className="kv">
+                                <div className="k">URL</div>
+                                <div className="v">
+                                    {selectedChannel.url ? (
+                                        <a
+                                            href={selectedChannel.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            title={selectedChannel.url}
+                                        >
+                                            {selectedChannel.url}
+                                        </a>
+                                    ) : (
+                                        "-"
+                                    )}
+                                </div>
+                            </div>
+                            <div className="kv col">
+                                <div className="k">Description</div>
+                                <div className="reason-box">
+                                    {selectedChannel.description || "-"}
+                                </div>
+                            </div>
                         </div>
-                        <div className="details-modal-footer">
+
+                        <div className="modal-footer">
+                            <button className="back-btn" onClick={() => setShowDetailsModal(false)}>
+                                Back
+                            </button>
                             <button className="view-messages-btn" onClick={handleViewMessages}>
                                 View Channel Messages
                             </button>
@@ -309,7 +350,7 @@ const AdminManageChannels = () => {
                 </div>
             )}
 
-            {/* 消息列表弹窗 */}
+            {/* 消息列表弹窗（保持原样） */}
             {showMessagesModal && selectedChannel && (
                 <div
                     className="messages-modal-overlay"
