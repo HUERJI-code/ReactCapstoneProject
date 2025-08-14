@@ -53,7 +53,7 @@ const ReviewRequests = () => {
                 headers: { "Content-Type": "application/json" },
             });
             alert(`Request ${requestId} has been ${status}.`);
-            await fetchReviewRequests();
+            navigate(0)
         } catch (error) {
             console.error("Failed to review request:", error?.response || error);
             alert("Failed to review request. Please try again.");
