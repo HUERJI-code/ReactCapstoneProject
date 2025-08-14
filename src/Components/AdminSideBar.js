@@ -17,7 +17,8 @@ export default function AdminSideBar() {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
     const [unreadMessages, setUnreadMessages] = useState(0);
-    const [username, setUsername] = useState(""); // 新增：保存完整用户名
+    const [username, setUsername] = useState("");
+    const [guardChecking, setGuardChecking] = useState(true); // 正在检查权限
 
     const isActive = (path) => location.pathname === path;
 
@@ -29,7 +30,6 @@ export default function AdminSideBar() {
             setUnreadMessages(list.filter((m) => m.isRead === false).length);
         } catch (err) {
             console.error("fetchMessages error:", err?.response || err);
-            // 未登录时可能 401，这里不弹窗
         }
     };
 
@@ -37,7 +37,7 @@ export default function AdminSideBar() {
         try {
             const res = await api.get("/api/Login/check"); // 200 即已登录
             if (res.data?.username) {
-                setUsername(res.data.username); // 保存用户名
+                setUsername(res.data.username);
             }
         } catch (err) {
             const status = err?.response?.status;
@@ -51,11 +51,46 @@ export default function AdminSideBar() {
         }
     };
 
+    // 检查是否 admin
+    const checkUserType = async () => {
+        try {
+            const res = await api.get("/checkLoginUserType");
+            if (!res?.data?.userType || res.data.userType.toLowerCase() !== "admin") {
+                alert("login user type is not admin")
+                navigate("/", { replace: true });
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error("checkUserType error:", err?.response || err);
+            navigate("/", { replace: true });
+            return false;
+        } finally {
+            setGuardChecking(false);
+        }
+    };
+
     useEffect(() => {
-        checkLoginStatus();
-        fetchMessages();
+        const init = async () => {
+            const ok = await checkUserType();
+            if (!ok) return; // 不是 admin 直接返回
+            await checkLoginStatus();
+            await fetchMessages();
+        };
+        init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    if (guardChecking) {
+        return (
+            <div className="sidebar">
+                <div className="logo-container">
+                    <span className="logo-icon">?</span>
+                    <span className="logo-text">Checking access...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="sidebar">
@@ -63,18 +98,11 @@ export default function AdminSideBar() {
                 <span className="logo-icon">
                     {username ? username.charAt(0).toUpperCase() : "?"}
                 </span>
-                <span className="logo-text">
-                    {username || "Loading..."}
-                </span>
+                <span className="logo-text">{username || "Loading..."}</span>
                 <span className="logo-dropdown">▼</span>
             </div>
 
             <div className="nav-items">
-                {/*<Link to="/AdminDashboard" className={`nav-item ${isActive("/AdminDashboard") ? "active" : ""}`}>*/}
-                {/*    <i className="nav-icon">📊</i>*/}
-                {/*    <span className="nav-text">Dashboards</span>*/}
-                {/*</Link>*/}
-
                 <Link to="/AdminInbox" className={`nav-item ${isActive("/AdminInbox") ? "active" : ""}`}>
                     <i className="nav-icon">✉️</i>
                     <span className="nav-text">Inbox</span>
@@ -103,39 +131,25 @@ export default function AdminSideBar() {
                     <span className="nav-text">Tag Management</span>
                 </Link>
 
-                <Link
-                    to="/AdminManageActivityRequests"
-                    className={`nav-item ${isActive("/AdminManageActivityRequests") ? "active" : ""}`}
-                >
+                <Link to="/AdminManageActivityRequests" className={`nav-item ${isActive("/AdminManageActivityRequests") ? "active" : ""}`}>
                     <i className="nav-icon">📥</i>
                     <span className="nav-text">Manage Activity Requests</span>
                 </Link>
 
-                <Link
-                    to="/ManageChannelRequests"
-                    className={`nav-item ${isActive("/ManageChannelRequests") ? "active" : ""}`}
-                >
+                <Link to="/ManageChannelRequests" className={`nav-item ${isActive("/ManageChannelRequests") ? "active" : ""}`}>
                     <i className="nav-icon">🚩</i>
                     <span className="nav-text">Manage Channel Report</span>
                 </Link>
 
-                <Link
-                    to="/ManageChannelCreateRequest"
-                    className={`nav-item ${isActive("/ManageChannelCreateRequest") ? "active" : ""}`}
-                >
+                <Link to="/ManageChannelCreateRequest" className={`nav-item ${isActive("/ManageChannelCreateRequest") ? "active" : ""}`}>
                     <i className="nav-icon">📝</i>
                     <span className="nav-text">Manage Channel Requests</span>
                 </Link>
 
-                {/* >>> 新增：生成邀请码 <<< */}
-                <Link
-                    to="/AdminInviteCodes"
-                    className={`nav-item ${isActive("/AdminInviteCodes") ? "active" : ""}`}
-                >
+                <Link to="/AdminInviteCodes" className={`nav-item ${isActive("/AdminInviteCodes") ? "active" : ""}`}>
                     <i className="nav-icon">🔑</i>
                     <span className="nav-text">Generate Invite Codes</span>
                 </Link>
-                {/* <<< 新增结束 */}
             </div>
         </div>
     );

@@ -15,7 +15,8 @@ const Sidebar = () => {
     const navigate = useNavigate();
     const [messages, setMessages] = useState([]);
     const [unreadMessages, setUnreadMessages] = useState(0);
-    const [username, setUsername] = useState(""); // 存完整用户名
+    const [username, setUsername] = useState("");
+    const [guardChecking, setGuardChecking] = useState(true); // 检查用户类型中
 
     const fetchMessages = async () => {
         try {
@@ -34,7 +35,7 @@ const Sidebar = () => {
         try {
             const res = await api.get("/api/Login/check");
             if (res.data?.username) {
-                setUsername(res.data.username); // 保存完整用户名
+                setUsername(res.data.username);
             }
         } catch (err) {
             const status = err?.response?.status;
@@ -48,11 +49,46 @@ const Sidebar = () => {
         }
     };
 
+    // 检查是否 organizer
+    const checkUserType = async () => {
+        try {
+            const res = await api.get("/checkLoginUserType");
+            if (!res?.data?.userType || res.data.userType.toLowerCase() !== "organizer") {
+                alert("login user type is not organizer")
+                navigate("/", { replace: true });
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error("checkUserType error:", err?.response || err);
+            navigate("/", { replace: true });
+            return false;
+        } finally {
+            setGuardChecking(false);
+        }
+    };
+
     useEffect(() => {
-        checkLoginStatus();
-        fetchMessages();
+        const init = async () => {
+            const ok = await checkUserType();
+            if (!ok) return; // 非 organizer 直接返回
+            await checkLoginStatus();
+            await fetchMessages();
+        };
+        init();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    if (guardChecking) {
+        return (
+            <div className="sidebar">
+                <div className="logo-container">
+                    <span className="logo-icon">?</span>
+                    <span className="logo-text">Checking access...</span>
+                </div>
+            </div>
+        );
+    }
 
     const isMyChannelsActive = () =>
         location.pathname === "/CreateChannel" ||
@@ -63,21 +99,14 @@ const Sidebar = () => {
     return (
         <div className="sidebar">
             <div className="logo-container">
-        <span className="logo-icon">
-          {username ? username.charAt(0).toUpperCase() : "?"}
-        </span>
-                <span className="logo-text">
-          {username || "Loading..."}
-        </span>
+                <span className="logo-icon">
+                    {username ? username.charAt(0).toUpperCase() : "?"}
+                </span>
+                <span className="logo-text">{username || "Loading..."}</span>
                 <span className="logo-dropdown">▼</span>
             </div>
 
             <div className="nav-items">
-                {/*<Link to="/Dashboard" className={`nav-item ${isActive("/Dashboard") ? "active" : ""}`}>*/}
-                {/*    <i className="nav-icon">📊</i>*/}
-                {/*    <span className="nav-text">Dashboards</span>*/}
-                {/*</Link>*/}
-
                 <Link to="/inbox" className={`nav-item ${isActive("/inbox") ? "active" : ""}`}>
                     <i className="nav-icon">✉️</i>
                     <span className="nav-text">Inbox</span>
