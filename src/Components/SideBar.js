@@ -154,7 +154,6 @@ const Sidebar = () => {
                 <Link to="/PublishPost" className={`nav-item ${isActive("/PublishPost") ? "active" : ""}`}>
                     <i className="nav-icon">📤</i>
                     <span className="nav-text">Publish Post</span>
-                    <span className="check-icon">✓</span>
                 </Link>
 
                 <Link to="/ViewChannelPost" className={`nav-item ${isActive("/ViewChannelPost") ? "active" : ""}`}>

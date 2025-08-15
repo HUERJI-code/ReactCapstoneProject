@@ -24,12 +24,18 @@ const ManageChannel = () => {
     const [selectedTags, setSelectedTags] = useState([]);
     const [showTagModal, setShowTagModal] = useState(false);
 
-    // Pagination state for tag modal
+    // —— Tag 悬浮框：分页 + 搜索/新增状态 —— //
     const [currentPage, setCurrentPage] = useState(1);
     const tagsPerPage = 10;
-    const totalPages = Math.ceil(allTags.length / tagsPerPage);
+    const [tagSearchTerm, setTagSearchTerm] = useState("");
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [newTagName, setNewTagName] = useState("");
+    const [creatingTag, setCreatingTag] = useState(false);
 
-    // 搜索/视图切换/显示隐藏搜索条
+    // 可选：Predict Tag（基于 channel 的 name/description）
+    const [predicting, setPredicting] = useState(false);
+
+    // 搜索/视图切换/显示隐藏搜索条（主列表）
     const [searchTerm, setSearchTerm] = useState("");
     const [showOverview, setShowOverview] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(true);
@@ -42,9 +48,14 @@ const ManageChannel = () => {
         fetchAllTags();
     }, []);
 
-    // Reset to first page whenever tag modal opens or tag list changes
+    // 打开 Tag 悬浮框时重置页码/搜索/新增表单状态
     useEffect(() => {
-        if (showTagModal) setCurrentPage(1);
+        if (showTagModal) {
+            setCurrentPage(1);
+            setTagSearchTerm("");
+            setShowAddForm(false);
+            setNewTagName("");
+        }
     }, [showTagModal, allTags]);
 
     const fetchChannels = async () => {
@@ -120,7 +131,7 @@ const ManageChannel = () => {
         setSelectedTags([]);
     };
 
-    // === 新增：取消频道（列表行 Cancel 按钮）===
+    // === 取消频道 ===
     const handleCancelChannel = async (ch) => {
         const title = ch?.name || "";
         const id = ch?.channelId ?? ch?.id; // 兼容两种字段
@@ -131,7 +142,6 @@ const ManageChannel = () => {
 
         try {
             setCancelingId(id);
-            // 调用 /cancelChannel?channelId=<id>
             await api.delete(`/cancelChannel?channelId=${id}`);
             alert("Cancelled successfully.");
             fetchChannels();
@@ -143,11 +153,118 @@ const ManageChannel = () => {
         }
     };
 
-    // Slice tags for current page
-    const startIdx = (currentPage - 1) * tagsPerPage;
-    const paginatedTags = allTags.slice(startIdx, startIdx + tagsPerPage);
+    // —— Tag 列表：搜索过滤 + 基于过滤的分页 —— //
+    const filteredTags = useMemo(() => {
+        const q = tagSearchTerm.trim().toLowerCase();
+        if (!q) return allTags;
+        return allTags.filter((t) => (t.name || "").toLowerCase().includes(q));
+    }, [allTags, tagSearchTerm]);
 
-    // 模糊搜索（name/url/description/status）
+    const totalPages = Math.ceil(filteredTags.length / tagsPerPage) || 1;
+    const indexStart = (currentPage - 1) * tagsPerPage;
+    const indexEnd = indexStart + tagsPerPage;
+    const paginatedTags = filteredTags.slice(indexStart, indexEnd);
+
+    // —— 根据 tagId 选中（用于新建/预测后） —— //
+    const addTagById = async (id) => {
+        let tag = allTags.find((t) => t.tagId === id);
+        if (!tag) {
+            await fetchAllTags();
+            tag = (allTags || []).find((t) => t.tagId === id);
+        }
+        if (!tag) return;
+        if (selectedTags.some((t) => t.tagId === id)) return;
+        setSelectedTags((prev) => [...prev, tag]);
+    };
+
+    // —— 新建标签 —— //
+    const handleCreateNewTag = async () => {
+        const name = (newTagName || tagSearchTerm || "").trim();
+        if (!name) {
+            alert("Tag name cannot be empty.");
+            return;
+        }
+        try {
+            setCreatingTag(true);
+            const res = await api.post("/createTag", {
+                name,
+                description: "1",
+            });
+
+            await fetchAllTags();
+
+            let createdId = res?.data?.tagId;
+            if (!createdId) {
+                const found = (allTags || []).find(
+                    (t) => (t.name || "").toLowerCase() === name.toLowerCase()
+                );
+                if (found) createdId = found.tagId;
+            }
+
+            if (createdId) {
+                await addTagById(createdId);
+                alert(`Tag "${name}" created and selected.`);
+            } else {
+                alert(`Tag "${name}" created. Please select it from the list.`);
+            }
+
+            setShowAddForm(false);
+            setNewTagName("");
+            setTagSearchTerm("");
+            setCurrentPage(1);
+        } catch (err) {
+            console.error("Create tag failed:", err?.response || err);
+            alert("Failed to create tag. Please try again.");
+        } finally {
+            setCreatingTag(false);
+        }
+    };
+
+    // —— 可选：Predict Tag（如果你不需要，请删除此函数和按钮） —— //
+    const handlePredictTags = async () => {
+        const title = editingChannel?.name || "";
+        const description = editingChannel?.description || "";
+        if (!title.trim() || !description.trim()) {
+            alert("Please fill in Name and Description first.");
+            return;
+        }
+        try {
+            setPredicting(true);
+            const res = await api.post("/api/ML/predict-tags", {
+                title: title.trim(),
+                description: description.trim(),
+            });
+
+            const data = res.data || {};
+            let ids = [];
+            if (typeof data.tagId === "number") {
+                ids = [data.tagId];
+            } else if (Array.isArray(data.tagIds)) {
+                ids = data.tagIds.filter((x) => typeof x === "number");
+            } else if (Array.isArray(data)) {
+                ids = data.filter((x) => typeof x === "number");
+            }
+
+            if (!ids.length) {
+                alert("No tagId returned from prediction.");
+                return;
+            }
+
+            await fetchAllTags();
+            for (const id of ids) {
+                // eslint-disable-next-line no-await-in-loop
+                await addTagById(id);
+            }
+            alert("Predicted tag(s) added.");
+        } catch (err) {
+            console.error("Predict tags failed:", err?.response || err);
+            alert("Failed to predict tags. Please try again.");
+        } finally {
+            setPredicting(false);
+        }
+    };
+
+    // 模糊搜索（主列表：name/url/description/status）
     const filteredChannels = useMemo(() => {
         const q = (searchTerm || "").trim().toLowerCase();
         if (!q) return channels;
@@ -194,7 +311,7 @@ const ManageChannel = () => {
             {loading && <div className="banner info">Loading...</div>}
             {err && <div className="banner error">{err}</div>}
 
-            {/* 顶部工具条：只要初始非空（channels.length > 0），搜索为空也不隐藏 */}
+            {/* 顶部工具条：只要初始非空（channels.length > 0） */}
             {!loading && channels.length > 0 && (
                 <div className="channels-header">
                     <div className="view-options">
@@ -232,7 +349,7 @@ const ManageChannel = () => {
                 </div>
             )}
 
-            {/* 主体区域：Overview 或 列表（列表表头仅在有结果时出现） */}
+            {/* 主体区域：Overview 或 列表 */}
             {!loading && !err && (
                 showOverview ? (
                     <div className="overview-grid">
@@ -371,11 +488,79 @@ const ManageChannel = () => {
                                 </div>
                             </div>
 
-                            {/* Tag-selection modal */}
+                            {/* Tag-selection modal（已加入：搜索、无结果创建、内联新建、基于搜索分页、可选 Predict） */}
                             {showTagModal && (
                                 <div className="tag-modal-overlay">
                                     <div className="tag-modal">
                                         <h3>Please select your channel tags</h3>
+
+                                        {/* 搜索框 */}
+                                        <div className="tag-search-row">
+                                            <input
+                                                type="text"
+                                                className="tag-search-input"
+                                                placeholder="Search tag by name..."
+                                                value={tagSearchTerm}
+                                                onChange={(e) => {
+                                                    setTagSearchTerm(e.target.value);
+                                                    setCurrentPage(1);
+                                                    setShowAddForm(false);
+                                                    setNewTagName("");
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* 无结果时的引导 */}
+                                        {filteredTags.length === 0 && !showAddForm && (
+                                            <div className="no-result-row">
+                                                <span>No tags found.</span>
+                                                <button
+                                                    type="button"
+                                                    className="add-new-tag-inline-btn"
+                                                    onClick={() => {
+                                                        setShowAddForm(true);
+                                                        setNewTagName(tagSearchTerm.trim());
+                                                    }}
+                                                >
+                                                    Add “{tagSearchTerm.trim() || "new"}”
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* 新建标签表单（内联） */}
+                                        {showAddForm && (
+                                            <div className="add-new-tag-form">
+                                                <input
+                                                    type="text"
+                                                    className="add-new-tag-input"
+                                                    placeholder="Enter new tag name"
+                                                    value={newTagName}
+                                                    onChange={(e) => setNewTagName(e.target.value)}
+                                                />
+                                                <div className="add-new-tag-actions">
+                                                    <button
+                                                        type="button"
+                                                        className={`create-new-tag-btn ${creatingTag ? "disabled" : ""}`}
+                                                        onClick={handleCreateNewTag}
+                                                        disabled={creatingTag}
+                                                    >
+                                                        {creatingTag ? "Creating..." : "Create & Select"}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="cancel-new-tag-btn"
+                                                        onClick={() => {
+                                                            setShowAddForm(false);
+                                                            setNewTagName("");
+                                                        }}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 标签列表（基于过滤分页） */}
                                         <div className="tags-container">
                                             {paginatedTags.map((tag) => (
                                                 <div
@@ -390,7 +575,7 @@ const ManageChannel = () => {
                                             ))}
                                         </div>
 
-                                        {totalPages > 1 && (
+                                        {filteredTags.length > 0 && totalPages > 1 && (
                                             <div className="pagination">
                                                 <button
                                                     type="button"
@@ -415,7 +600,22 @@ const ManageChannel = () => {
                                         )}
 
                                         <div className="modal-footer">
-                                            <button type="button" className="back-btn" onClick={() => setShowTagModal(false)}>
+                                            {/* 如果不需要预测，删除下面这个按钮和 handlePredictTags 函数 */}
+                                            <button
+                                                type="button"
+                                                className={`predict-btn ${predicting ? "disabled" : ""}`}
+                                                onClick={handlePredictTags}
+                                                disabled={predicting}
+                                                title="Predict tags from Name & Description"
+                                            >
+                                                {predicting ? "Predicting..." : "Predict Tag"}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="back-btn"
+                                                onClick={() => setShowTagModal(false)}
+                                            >
                                                 Back
                                             </button>
                                         </div>
