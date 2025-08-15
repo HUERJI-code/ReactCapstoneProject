@@ -24,6 +24,12 @@ const ManageChannelRequests = () => {
     const [loadingChannel, setLoadingChannel] = useState(false);
     const [channelErr, setChannelErr] = useState("");
 
+    // 新增：消息弹窗相关（与 AdminManageChannels 保持一致）
+    const [showMessagesModal, setShowMessagesModal] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [messagesLoading, setMessagesLoading] = useState(false);
+    const [messagesError, setMessagesError] = useState("");
+
     // 顶部工具条
     const [searchTerm, setSearchTerm] = useState("");
     const [showOverview, setShowOverview] = useState(false);
@@ -76,14 +82,13 @@ const ManageChannelRequests = () => {
         }
     };
 
-    // 新增：获取频道详情
+    // 获取频道详情
     const fetchChannelInfo = async (channelId) => {
         if (!channelId && channelId !== 0) return;
         setLoadingChannel(true);
         setChannelErr("");
         setChannelInfo(null);
         try {
-            // 如果你只想固定用 2 测试，把下面 params 改成 { channelId: 2 }
             const res = await api.get("/channel/getChannelById", {
                 params: { channelId },
             });
@@ -100,6 +105,31 @@ const ManageChannelRequests = () => {
         setSelectedReport(report);
         setShowDetailsModal(true);
         fetchChannelInfo(report?.channelId); // 动态按行的 channelId 拉取
+    };
+
+    // ===== 新增：获取选中频道的消息（复用 AdminManageChannels 的接口与逻辑） =====
+    const fetchChannelMessages = async (channelId) => {
+        setMessages([]);
+        setMessagesError("");
+        setMessagesLoading(true);
+        try {
+            const res = await api.get("/api/channel/channels/getChannelMessages", {
+                params: { channelId },
+            });
+            setMessages(res.data || []);
+        } catch (err) {
+            console.error("Failed to fetch channel messages:", err?.response || err);
+            setMessagesError("Failed to fetch channel messages. Please try again.");
+        } finally {
+            setMessagesLoading(false);
+        }
+    };
+
+    // 点击 “View Post Messages”
+    const handleViewMessages = async () => {
+        if (!selectedReport) return;
+        setShowMessagesModal(true);
+        await fetchChannelMessages(selectedReport.channelId);
     };
 
     // 仅展示未处理（排除 approved / rejected）
@@ -300,7 +330,7 @@ const ManageChannelRequests = () => {
                         </div>
 
                         <div className="modal-body">
-                            {/* 原有 Report 基本信息 */}
+                            {/* Report 基本信息 */}
                             <div className="kv">
                                 <span className="k">Id:</span>
                                 <span className="v">{selectedReport.id}</span>
@@ -324,7 +354,7 @@ const ManageChannelRequests = () => {
                                 </div>
                             </div>
 
-                            {/* 新增：Channel 信息区域 */}
+                            {/* Channel 信息 */}
                             <div className="kv col">
                                 <span className="k">Channel Info:</span>
                                 <div className="reason-box">
@@ -376,6 +406,64 @@ const ManageChannelRequests = () => {
                                 onClick={() => handleReview(selectedReport.id, "rejected")}
                             >
                                 Reject
+                            </button>
+
+                            {/* 新增：查看消息 */}
+                            <button
+                                className="view-messages-btn"
+                                onClick={handleViewMessages}
+                                title="View messages posted in this channel"
+                            >
+                                View Post Messages
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 新增：消息列表弹窗（置于更高层级 z-index:120） */}
+            {showMessagesModal && selectedReport && (
+                <div
+                    className="messages-modal-overlay"
+                    onClick={() => setShowMessagesModal(false)}
+                >
+                    <div className="messages-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>
+                                Messages - Channel: {channelInfo?.name || "-"} (ID: {selectedReport.channelId})
+                            </h3>
+                            <button className="close-btn" onClick={() => setShowMessagesModal(false)}>
+                                &times;
+                            </button>
+                        </div>
+
+                        <div className="messages-content">
+                            {messagesLoading && <div className="loading">Loading messages...</div>}
+                            {messagesError && <div className="error-text">{messagesError}</div>}
+                            {!messagesLoading && !messagesError && messages.length === 0 && (
+                                <div className="empty-text">No messages found.</div>
+                            )}
+                            {!messagesLoading && !messagesError && messages.length > 0 && (
+                                <div className="messages-list">
+                                    {messages.map((message) => (
+                                        <div className="message-item" key={message.id}>
+                                            <p><strong>Title:</strong> {message.title}</p>
+                                            <p><strong>Content:</strong> {message.content}</p>
+                                            <p><strong>Posted At:</strong> {message.postedAt}</p>
+                                            <p><strong>Status:</strong> {message.isVisible ? "Visible" : "Hidden"}</p>
+                                            <hr />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                className="refresh-btn"
+                                onClick={() => fetchChannelMessages(selectedReport.channelId)}
+                            >
+                                Refresh
                             </button>
                         </div>
                     </div>
